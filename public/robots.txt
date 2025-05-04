@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://yourwebsite.com/sitemap.xml
+
+# Disallow özel sayfalar
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /api/
+
+# Crawl-delay
+Crawl-delay: 10

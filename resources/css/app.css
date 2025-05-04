@@ -1,0 +1,251 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        @apply bg-white dark:bg-gray-900;
+    }
+    body {
+        @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen;
+    }
+    img {
+        @apply transition-all duration-300;
+    }
+    /* Dark mode için tablo stilleri */
+    table {
+        @apply dark:border-gray-700;
+    }
+    th {
+        @apply dark:bg-gray-800 dark:text-gray-100;
+    }
+    td {
+        @apply dark:border-gray-700 dark:text-gray-300;
+    }
+    /* Form elemanları için dark mode stilleri */
+    input, select, textarea {
+        @apply dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors duration-200 dark:focus:ring-offset-gray-900;
+    }
+    
+    .btn-secondary {
+        @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-900;
+    }
+    
+    .card {
+        @apply bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border dark:border-gray-700;
+    }
+    
+    .input-field {
+        @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-white;
+    }
+
+    .image-lazy-wrapper {
+        @apply relative overflow-hidden bg-gray-100 dark:bg-gray-800;
+    }
+    
+    .image-lazy-wrapper::before {
+        @apply absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/20 dark:via-gray-700/20 to-transparent -translate-x-full;
+        content: "";
+        animation: shimmer 1.5s infinite;
+    }
+    
+    /* Admin panel özel stilleri */
+    .admin-layout {
+        @apply bg-gray-50 dark:bg-gray-900;
+    }
+    
+    .admin-sidebar {
+        @apply bg-white dark:bg-gray-800 border-r dark:border-gray-700;
+    }
+    
+    .admin-header {
+        @apply bg-white dark:bg-gray-800 border-b dark:border-gray-700;
+    }
+    
+    .admin-content {
+        @apply bg-gray-50 dark:bg-gray-900;
+    }
+    
+    .admin-card {
+        @apply bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm;
+    }
+    
+    /* Gelişmiş admin tablo stilleri */
+    .admin-table {
+        @apply w-full border-collapse border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm;
+    }
+    
+    .admin-table thead {
+        @apply bg-gray-50 dark:bg-gray-800;
+    }
+    
+    .admin-table th {
+        @apply bg-gray-50 dark:bg-gray-800 text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider text-xs border-b border-gray-200 dark:border-gray-700;
+    }
+    
+    .admin-table tbody tr {
+        @apply border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150;
+    }
+    
+    .admin-table td {
+        @apply py-3 px-4 text-sm text-gray-700 dark:text-gray-300 align-middle;
+    }
+    
+    .admin-table tr:last-child td {
+        @apply border-b-0;
+    }
+    
+    /* Çizgili tablo stili */
+    .admin-table-striped tbody tr:nth-child(even) {
+        @apply bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700;
+    }
+    
+    /* Kompakt tablo stili */
+    .admin-table-compact th,
+    .admin-table-compact td {
+        @apply py-2 px-3 text-xs;
+    }
+    
+    /* Gelişmiş admin form stilleri */
+    .admin-form {
+        @apply space-y-6;
+    }
+    
+    .admin-form-group {
+        @apply space-y-2;
+    }
+    
+    .admin-label {
+        @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
+    }
+    
+    .admin-input {
+        @apply block w-full px-4 py-2.5 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition duration-150 placeholder-gray-400 dark:placeholder-gray-600;
+    }
+    
+    .admin-select {
+        @apply block w-full px-4 py-2.5 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition duration-150 appearance-none bg-no-repeat bg-right pr-10;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-size: 1.5rem 1.5rem;
+    }
+    
+    .admin-textarea {
+        @apply block w-full px-4 py-2.5 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition duration-150 placeholder-gray-400 dark:placeholder-gray-600 min-h-[100px] resize-y;
+    }
+    
+    .admin-checkbox, .admin-radio {
+        @apply w-4 h-4 text-primary-600 rounded focus:ring-primary-500 focus:outline-none border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:ring-offset-gray-900;
+    }
+    
+    .admin-checkbox-label, .admin-radio-label {
+        @apply inline-flex items-center text-sm text-gray-700 dark:text-gray-300;
+    }
+    
+    /* Admin buton stileri */
+    .admin-btn {
+        @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200;
+    }
+    
+    .admin-btn-primary {
+        @apply admin-btn bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500 dark:focus:ring-offset-gray-900;
+    }
+    
+    .admin-btn-secondary {
+        @apply admin-btn bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 dark:focus:ring-offset-gray-900;
+    }
+    
+    .admin-btn-danger {
+        @apply admin-btn bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 dark:focus:ring-offset-gray-900;
+    }
+    
+    .admin-btn-success {
+        @apply admin-btn bg-green-600 hover:bg-green-700 text-white focus:ring-green-500 dark:focus:ring-offset-gray-900;
+    }
+    
+    .admin-btn-warning {
+        @apply admin-btn bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-500 dark:focus:ring-offset-gray-900;
+    }
+    
+    .admin-btn-info {
+        @apply admin-btn bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500 dark:focus:ring-offset-gray-900;
+    }
+    
+    .admin-btn-sm {
+        @apply px-2.5 py-1.5 text-xs rounded;
+    }
+    
+    .admin-btn-lg {
+        @apply px-6 py-3 text-base rounded-xl;
+    }
+    
+    .admin-btn-icon {
+        @apply p-2 rounded-full;
+    }
+    
+    /* Admin Card ve Panel stilleri */
+    .admin-panel {
+        @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden;
+    }
+    
+    .admin-panel-header {
+        @apply px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800;
+    }
+    
+    .admin-panel-title {
+        @apply text-lg font-medium text-gray-900 dark:text-white;
+    }
+    
+    .admin-panel-body {
+        @apply p-6;
+    }
+    
+    .admin-panel-footer {
+        @apply px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800;
+    }
+    
+    /* Admin Badge / Etiket stilleri */
+    .admin-badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+    
+    .admin-badge-gray {
+        @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200;
+    }
+    
+    .admin-badge-red {
+        @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+    }
+    
+    .admin-badge-green {
+        @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
+    }
+    
+    .admin-badge-blue {
+        @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300;
+    }
+    
+    .admin-badge-yellow {
+        @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
+    }
+    
+    .admin-badge-purple {
+        @apply bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300;
+    }
+}
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
