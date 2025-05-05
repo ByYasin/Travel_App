@@ -14,15 +14,13 @@ use Illuminate\Validation\ValidationException;
 
 class TourReviewController extends Controller
 {
-    /**
-     * Controller sınıf constructor'ı
-     */
+
     public function __construct()
     {
     }
 
     /**
-     * Tur değerlendirmelerini listeler
+
      *
      * @param int $tourId
      * @return JsonResponse
@@ -59,7 +57,7 @@ class TourReviewController extends Controller
     }
 
     /**
-     * Yeni tur değerlendirmesi oluşturur
+
      *
      * @param Request $request
      * @param int $tourId
@@ -140,7 +138,7 @@ class TourReviewController extends Controller
     }
 
     /**
-     * Bir tur değerlendirmesini siler
+     * Bir tur değerlendirmesini sil
      *
      * @param int $reviewId
      * @return JsonResponse
@@ -204,7 +202,7 @@ class TourReviewController extends Controller
     }
 
     /**
-     * Bir değerlendirmeye yanıt ekler
+     * Bir değerlendirmeye yanıt ekle
      *
      * @param Request $request
      * @param int $reviewId

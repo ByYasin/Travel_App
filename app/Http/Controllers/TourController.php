@@ -16,13 +16,13 @@ class TourController extends Controller
 {
     public function index(Request $request)
     {
-        // Hata ayıklama bilgisi
+    
         \Log::info('Tours Index çağrıldı', [
             'request' => $request->all(),
             'headers' => $request->headers->all()
         ]);
         
-        // İstek türünü kontrol et
+       
         $wantsJson = $request->expectsJson() || 
                      $request->is('api/*') || 
                      $request->wantsJson() || 
@@ -30,60 +30,59 @@ class TourController extends Controller
         
         \Log::info('İstek türü: ' . ($wantsJson ? 'JSON' : 'HTML'));
         
-        // Eğer HTML isteği geliyorsa, direkt view'a yönlendir
+       
         if (!$wantsJson) {
             \Log::info('HTML yanıtı gönderiliyor');
             return view('app');
         }
         
-        // Veritabanında tour kayıtları var mı kontrol et
+       
         $tourCount = Tour::count();
         
-        // Eğer hiç tour yoksa demo verileri ekle
+        
         if ($tourCount === 0) {
             \Log::info('Tours tablosunda hiç kayıt bulunamadı, demo veriler ekleniyor');
             $this->createDemoTours();
         }
         
-        // Sayfalama parametreleri
+        
         $page = max(1, (int)$request->input('page', 1));
         $perPage = (int)$request->input('per_page', 9);
         
-        // Önbellek anahtarı oluştur
+       
         $cacheKey = "tours_page_{$page}_perpage_{$perPage}_"
             . md5(json_encode($request->except(['page', 'per_page'])));
         
-        // Önbellekte var mı kontrol et
+        
         if (Cache::has($cacheKey) && !$request->has('no_cache')) {
             $tours = Cache::get($cacheKey);
             \Log::info('Tours önbellekten alındı');
             return response()->json($tours);
         }
         
-        // Sorgu oluştur
+       
         $query = Tour::with(['category'])
             ->where('status', 'active');
         
-        // Filtreleme işlemleri
-        // Tip / Kategori filtresi
+ 
         if ($request->has('type')) {
             $type = $request->input('type');
             $query->where('type', $type);
         }
         
-        // Kategori filtresi
+        
         if ($request->has('category_id')) {
             $categoryId = $request->input('category_id');
             $query->where('category_id', $categoryId);
         }
         
-        // Bölge filtresi
+       
         if ($request->has('region')) {
             $region = $request->input('region');
             $query->where('location', 'like', "%{$region}%");
         }
         
-        // Süre filtresi
+        
         if ($request->has('duration')) {
             $duration = $request->input('duration');
             if ($duration === '1 Gün') {
@@ -118,7 +117,7 @@ class TourController extends Controller
             }
         }
         
-        // Fiyat aralığı filtresi
+        
         if ($request->has('price')) {
             $priceRange = $request->input('price');
             if ($priceRange === '0-500') {
@@ -132,7 +131,7 @@ class TourController extends Controller
             }
         }
         
-        // Sıralama
+        
         $sort = $request->input('sort', 'newest');
         if ($sort === 'newest') {
             $query->orderBy('created_at', 'desc');
@@ -143,35 +142,34 @@ class TourController extends Controller
         } else if ($sort === 'price-high') {
             $query->orderBy('price', 'desc');
         } else if ($sort === 'popularity') {
-            // Popülerlik sıralaması için rezervasyon sayısını kullan
-            // Not: Bu özellik aktif değilse, varsayılan olarak ID'ye göre sırala
+
             $query->orderBy('id', 'desc');
         } else if ($sort === 'rating') {
-            // Puan sıralaması (Bu da eklenmemiş olabilir, ID'ye göre sırala)
+
             $query->orderBy('id', 'desc');
         }
         
         try {
-            // Sayfalama ile sonuçları getir
+
             $tours = $query->paginate($perPage, ['*'], 'page', $page);
             
-            // Ortalama puan ve yorum sayısı hesapla
+
             $tours->getCollection()->transform(function ($tour) {
                 $tour->average_rating = $tour->getAverageRatingAttribute();
                 $tour->review_count = $tour->getReviewCountAttribute();
                 
-                // Büyük boyutlu verileri hafiflet
+
                 if (!empty($tour->gallery) && is_array($tour->gallery) && count($tour->gallery) > 5) {
                     $tour->gallery = array_slice($tour->gallery, 0, 5);
                 }
                 
-                // API yanıtını hafiflet
+
                 unset($tour->created_at, $tour->updated_at);
                 
                 return $tour;
             });
             
-            // Önbelleğe kaydet (60 dakika)
+
             Cache::put($cacheKey, $tours, 3600);
             
             \Log::info('Tours başarıyla yüklendi', [
@@ -197,35 +195,35 @@ class TourController extends Controller
     public function show($id, Request $request)
     {
         try {
-            // İstek türünü kontrol et
+            
             $wantsJson = $request->expectsJson() || 
                         $request->is('api/*') || 
                         $request->wantsJson() || 
                         $request->header('X-Requested-With') === 'XMLHttpRequest';
             
-            // Eğer HTML isteği geliyorsa, direkt view'a yönlendir
+            
             if (!$wantsJson) {
                 return view('app');
             }
             
-            // Önbellek anahtarı
+            
             $cacheKey = "tour.{$id}";
             
-            // Tur verisini önbellekten veya DB'den al
+           
             $tour = Cache::remember($cacheKey, 3600, function () use ($id) {
                 return Tour::with('category')
                     ->findOrFail($id);
             });
             
-            // Ortalama puanı ve değerlendirme sayısını hesapla
+            
             $tour->average_rating = $tour->getAverageRatingAttribute();
             $tour->review_count = $tour->getReviewCountAttribute();
             
-            // included ve not_included alanlarını kontrol et
+            
             $includedArray = [];
             $notIncludedArray = [];
             
-            // included alanı için kontrol
+           
             if (!empty($tour->included)) {
                 if (is_string($tour->included)) {
                     try {
@@ -238,7 +236,7 @@ class TourController extends Controller
                 }
             }
             
-            // not_included alanı için kontrol
+            
             if (!empty($tour->not_included)) {
                 if (is_string($tour->not_included)) {
                     try {
@@ -251,7 +249,7 @@ class TourController extends Controller
                 }
             }
             
-            // Formatlanmış veriyi hazırla
+            
             $tourData = [
                 'id' => $tour->id,
                 'title' => $tour->title ?? 'İsimsiz Tur',
@@ -312,18 +310,18 @@ class TourController extends Controller
             ->limit(24)
             ->get();
         
-        // Dönüş verisini hazırla
+        
         $tours->transform(function ($tour) {
             $tour->average_rating = $tour->getAverageRatingAttribute();
             $tour->review_count = $tour->getReviewCountAttribute();
             
-            // API yanıtını hafiflet
+            
             unset($tour->created_at, $tour->updated_at);
             
             return $tour;
         });
         
-        // Önbelleğe kaydet (30 dakika)
+        
         Cache::put($cacheKey, $tours, 1800);
         
         return response()->json($tours);
@@ -351,10 +349,10 @@ class TourController extends Controller
                 'notes' => 'nullable|string'
             ]);
 
-            // Tur bilgisini al
+            
             $tour = Tour::findOrFail($validated['tour_id']);
             
-            // Kullanıcıyı email'e göre bul veya oluştur
+            
             $user = User::firstOrCreate(
                 ['email' => $validated['email']],
                 [
@@ -364,10 +362,10 @@ class TourController extends Controller
                 ]
             );
             
-            // Toplam fiyatı hesapla
+           
             $totalPrice = $tour->price * $validated['participant_count'];
             
-            // Rezervasyon oluştur
+            
             $reservation = Reservation::create([
                 'user_id' => $user->id,
                 'tour_id' => $validated['tour_id'],
@@ -378,7 +376,7 @@ class TourController extends Controller
                 'special_requests' => $validated['notes'] ?? null,
             ]);
             
-            // Rezervasyon nesnesini ilişkili verilerle birlikte döndür
+            
             $reservation->load(['user', 'tour']);
             
             return response()->json([
@@ -403,9 +401,7 @@ class TourController extends Controller
         }
     }
 
-    /**
-     * Tüm kategorileri getiriyorum.
-     */
+
     public function getCategories()
     {
         $categories = Cache::remember('tour_categories', 3600, function () {
@@ -415,9 +411,7 @@ class TourController extends Controller
         return response()->json($categories);
     }
 
-    /**
-     * Belirli bir kategoriye ait turları getiriyorum.
-     */
+
     public function getByCategory($categorySlug)
     {
         $category = TourCategory::where('slug', $categorySlug)->firstOrFail();
@@ -434,12 +428,10 @@ class TourController extends Controller
         ]);
     }
 
-    /**
-     * Demo tur verilerini oluşturur
-     */
+
     private function createDemoTours()
     {
-        // Önce kategorileri oluştur
+ 
         $kulturKategori = TourCategory::firstOrCreate(
             ['slug' => 'kultur-turu'],
             [
@@ -458,7 +450,7 @@ class TourController extends Controller
             ]
         );
         
-        // Turları kategori ID'leri ile oluştur
+
         Tour::create([
             'title' => 'İstanbul Turu',
             'slug' => 'istanbul-turu',

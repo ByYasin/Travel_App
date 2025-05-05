@@ -10,18 +10,16 @@ use Illuminate\Support\Facades\DB;
 
 class UserReservationController extends Controller
 {
-    /**
-     * Controller yapısı
-     */
+
     public function __construct()
     {
         // $this->middleware('auth:sanctum');
         // Bu satırı kaldırıyorum çünkü Controller sınıfından türetilen sınıflar
-        // middleware() metodunu doğrudan çağıramaz. Routes dosyası içinde tanımlanmalı.
+        // middleware() metodunu doğrudan çağıramaz. Routes dosyası içinde tanımlanmalı ondan dolayı.
     }
     
     /**
-     * Kullanıcının rezervasyonlarını listeler
+
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -30,8 +28,7 @@ class UserReservationController extends Controller
         $user = Auth::user();
         
         try {
-            // Model ilişkileri yerine direkt SQL ile verileri çekiyoruz
-            // categories -> tour_categories olarak düzeltildi
+
             $reservations = DB::table('reservations')
                 ->leftJoin('tours', 'reservations.tour_id', '=', 'tours.id')
                 ->leftJoin('tour_categories', 'tours.category_id', '=', 'tour_categories.id')
@@ -56,20 +53,20 @@ class UserReservationController extends Controller
                 ->orderBy('reservations.created_at', 'desc')
                 ->get();
                 
-            // Log
+
             \Log::info('UserReservationController@index: Rezervasyonlar yüklendi', [
                 'user_id' => $user->id,
                 'count' => $reservations->count()
             ]);
                 
-            // Her rezervasyon için ek bilgileri hesapla
+           
             $reservations = $reservations->map(function ($reservation) {
-                // Tur bilgileri eksikse, varsayılan değerler ata
+                
                 if (!$reservation->tour_title) {
                     $reservation->tour_title = 'Tur #' . $reservation->tour_id;
                 }
                 
-                // Tur resmi eksikse, varsayılan resim ata
+               
                 if (empty($reservation->tour_image)) {
                     $reservation->tour_image = '/images/tours/default.jpg';
                     \Log::debug('UserReservationController: Tour resmi eksik, varsayılan oluşturuldu', [
@@ -77,7 +74,7 @@ class UserReservationController extends Controller
                         'tour_id' => $reservation->tour_id
                     ]);
                 } else {
-                    // Eğer resim yolu tam değilse, URL'yi düzenle
+                    
                     if (!str_starts_with($reservation->tour_image, 'http') && !str_starts_with($reservation->tour_image, '/')) {
                         $reservation->tour_image = '/' . $reservation->tour_image;
                     }
@@ -89,12 +86,12 @@ class UserReservationController extends Controller
                     ]);
                 }
                 
-                // Katılımcı sayısı yoksa, varsayılan 1 olarak ayarla
+                
                 if (!$reservation->participant_count) {
                     $reservation->participant_count = 1;
                 }
                 
-                // İşlem numarası yoksa, rezervasyon ID'si ile oluştur
+                
                 if (empty($reservation->transaction_id)) {
                     $reservation->transaction_id = 'TR' . str_pad($reservation->id, 6, '0', STR_PAD_LEFT);
                 }
@@ -112,7 +109,7 @@ class UserReservationController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             
-            // Hata durumunda detaylı bilgi dön
+           
             return response()->json([
                 'success' => false,
                 'message' => 'Rezervasyonlar yüklenirken bir hata oluştu: ' . $e->getMessage(),
@@ -124,7 +121,7 @@ class UserReservationController extends Controller
     }
 
     /**
-     * Rezervasyon detaylarını görüntüler
+
      *
      * @param int $id Rezervasyon ID
      * @return \Illuminate\Http\JsonResponse
@@ -134,7 +131,7 @@ class UserReservationController extends Controller
         $user = Auth::user();
         
         try {
-            // Direkt SQL ile rezervasyon detaylarını getir
+
             $reservation = DB::table('reservations')
                 ->leftJoin('tours', 'reservations.tour_id', '=', 'tours.id')
                 ->leftJoin('tour_categories', 'tours.category_id', '=', 'tour_categories.id')
@@ -166,11 +163,11 @@ class UserReservationController extends Controller
                 ], 404);
             }
                 
-            // Tur resmi eksikse, varsayılan resim ata
+
             if (empty($reservation->tour_image)) {
                 $reservation->tour_image = '/images/tours/default.jpg';
             } else {
-                // Eğer resim yolu tam değilse, URL'yi düzenle
+  
                 if (!str_starts_with($reservation->tour_image, 'http') && !str_starts_with($reservation->tour_image, '/')) {
                     $reservation->tour_image = '/' . $reservation->tour_image;
                 }
@@ -190,7 +187,7 @@ class UserReservationController extends Controller
     }
     
     /**
-     * Rezervasyonu iptal eder
+
      *
      * @param int $id Rezervasyon ID
      * @return \Illuminate\Http\JsonResponse
@@ -200,12 +197,12 @@ class UserReservationController extends Controller
         $user = Auth::user();
         
         try {
-            // Kullanıcının rezervasyonunu bul
+            
             $reservation = Reservation::where('user_id', $user->id)
                 ->where('id', $id)
                 ->firstOrFail();
             
-            // Rezervasyonun iptal edilebilir olup olmadığını kontrol et
+            
             if ($reservation->status === 'cancelled') {
                 return response()->json([
                     'success' => false,
@@ -213,11 +210,11 @@ class UserReservationController extends Controller
                 ], 400);
             }
             
-            // Rezervasyon tarihine çok az bir süre kaldıysa iptal edilemez
+            
             $reservationDate = \Carbon\Carbon::parse($reservation->reservation_date);
             $now = \Carbon\Carbon::now();
             
-            // Rezervasyon tarihine 48 saatten az kaldıysa iptal edilemez
+            
             if ($now->diffInHours($reservationDate) < 48) {
                 return response()->json([
                     'success' => false,
@@ -225,7 +222,7 @@ class UserReservationController extends Controller
                 ], 400);
             }
             
-            // Rezervasyon durumunu iptal olarak güncelle
+           
             $reservation->status = 'cancelled';
             $reservation->save();
             

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class FavoriteController extends Controller
 {
     /**
-     * Kullanıcının favorilerini görüntüler
+     * Kullanıcının favorilerini görüntüle
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -32,14 +32,14 @@ class FavoriteController extends Controller
                 'method' => 'FavoriteController@index'
             ]);
             
-            // Kullanıcının favori turlarını al
+           
             $favoriteTours = $user->favoriteTours()->with('category')->get();
             
-            // Boş dizi oluştur
+            
             $favorites = [];
             
             foreach ($favoriteTours as $tour) {
-                // Her bir turu ayrı ayrı işle, daha güvenli
+               
                 try {
                     $favorites[] = [
                         'id' => $tour->id,
@@ -62,18 +62,18 @@ class FavoriteController extends Controller
                         'tour_id' => $tour->id ?? 'unknown',
                         'error' => $tourError->getMessage()
                     ]);
-                    // Hatalı tur için atlama
+                    
                     continue;
                 }
             }
             
-            // Debug bilgisi
+            
             \Log::info('Favoriler başarıyla getirildi', [
                 'user_id' => $user->id,
                 'favorites_count' => count($favorites)
             ]);
             
-            // JSON_UNESCAPED_UNICODE ile Türkçe karakterlerin düzgün kodlanmasını sağla
+            
             return response()->json($favorites, 200, [], JSON_UNESCAPED_UNICODE);
             
         } catch (\Exception $e) {
@@ -93,7 +93,7 @@ class FavoriteController extends Controller
     }
 
     /**
-     * Favori durumunu değiştirir (ekler/çıkarır)
+
      *
      * @param int $tourId Tur ID
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
@@ -103,13 +103,13 @@ class FavoriteController extends Controller
         try {
             $user = Auth::user();
             
-            // Tur ID'sini kontrol et
+            
             $tour = Tour::find($tourId);
             if (!$tour) {
                 return back()->with('error', 'Tur bulunamadı');
             }
             
-            // Eğer zaten favorilerde varsa kaldır, yoksa ekle
+            
             $existingFavorite = $user->favorites()->where('tour_id', $tourId)->first();
             
             if ($existingFavorite) {
@@ -123,7 +123,7 @@ class FavoriteController extends Controller
                 $message = 'Tur favorilerinize eklendi';
             }
             
-            // AJAX isteği için JSON yanıt
+            
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true, 
@@ -132,7 +132,7 @@ class FavoriteController extends Controller
                 ], 200, [], JSON_UNESCAPED_UNICODE);
             }
             
-            // Normal istek için yönlendirme
+            
             return back()->with('success', $message);
         } catch (\Exception $e) {
             \Log::error('Favori toggle hatası: ' . $e->getMessage(), [
@@ -142,7 +142,7 @@ class FavoriteController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             
-            // AJAX isteği için JSON yanıt
+            
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -150,13 +150,13 @@ class FavoriteController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE);
             }
             
-            // Normal istek için hata mesajı ile yönlendirme
+            
             return back()->with('error', 'Favori işlemi sırasında bir hata oluştu');
         }
     }
     
     /**
-     * Favoriyi kaldırır
+
      *
      * @param int $tourId Tur ID
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
@@ -180,7 +180,7 @@ class FavoriteController extends Controller
                 return back()->with('error', 'Favori bulunamadı');
             }
             
-            // Favoriyi sil
+            
             $favorite->delete();
             
             if (request()->ajax()) {

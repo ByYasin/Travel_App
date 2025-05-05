@@ -13,7 +13,7 @@ class SitemapController extends Controller
 {
     public function index()
     {
-        // Sitemap cache'lenebilir, ancak burada her istek için yeniden oluşturuyoruz
+  
         $content = $this->generateSitemapXml();
         
         return Response::make($content, 200, [
@@ -23,14 +23,14 @@ class SitemapController extends Controller
     
     private function generateSitemapXml()
     {
-        // XML başlangıcı
+        
         $sitemap = '<?xml version="1.0" encoding="UTF-8"?>';
         $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
         
-        // Ana sayfa
+        
         $sitemap .= $this->addUrl(URL::to('/'), Carbon::now()->toIso8601String(), 'daily', '1.0');
         
-        // Statik sayfalar
+        
         $staticPages = [
             '/about' => 'weekly',
             '/contact' => 'monthly',
@@ -42,7 +42,7 @@ class SitemapController extends Controller
             $sitemap .= $this->addUrl(URL::to($url), Carbon::now()->toIso8601String(), $changefreq, '0.8');
         }
         
-        // Dinamik içerik: Turlar
+       
         try {
             $tours = Tour::all();
             foreach ($tours as $tour) {
@@ -57,7 +57,7 @@ class SitemapController extends Controller
             // Tour modeli bulunamadıysa veya veritabanına erişim yoksa sessizce devam et
         }
         
-        // XML sonlandırma
+       
         $sitemap .= '</urlset>';
         
         return $sitemap;

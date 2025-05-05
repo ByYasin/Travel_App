@@ -12,14 +12,13 @@ use Carbon\Carbon;
 class ReservationController extends Controller
 {
     /**
-     * Create a new controller instance.
+
      *
      * @return void
      */
     public function __construct()
     {
-        // Middleware'ler route dosyasında tanımlanmalıdır
-        // $this->middleware('auth:sanctum');
+
     }
 
     /**
@@ -30,7 +29,7 @@ class ReservationController extends Controller
      */
     public function index(Request $request)
     {
-        // Admin kontrolü
+        
         if (!auth()->user()->isAdmin() && !$request->has('user_id')) {
             return response()->json([
                 'message' => 'Sadece kendi rezervasyonlarınızı görebilirsiniz'
@@ -40,29 +39,29 @@ class ReservationController extends Controller
         try {
             $query = Reservation::with(['user', 'tour']);
             
-            // Kullanıcı bazlı filtreleme (admin değilse sadece kendi rezervasyonlarını görür)
+            
             if (!auth()->user()->isAdmin()) {
                 $query->where('user_id', auth()->id());
             } elseif ($request->has('user_id')) {
                 $query->where('user_id', $request->user_id);
             }
             
-            // Tur bazlı filtreleme
+            
             if ($request->has('tour_id')) {
                 $query->where('tour_id', $request->tour_id);
             }
             
-            // Durum bazlı filtreleme
+            
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
             
-            // Tarih aralığı bazlı filtreleme
+            
             if ($request->has('start_date') && $request->has('end_date')) {
                 $query->whereBetween('reservation_date', [$request->start_date, $request->end_date]);
             }
             
-            // Arama filtresi (tur adı veya kullanıcı adı/e-postası)
+           
             if ($search = $request->input('search')) {
                 $query->whereHas('tour', function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%");
@@ -72,11 +71,11 @@ class ReservationController extends Controller
                 });
             }
             
-            // Sıralama
+            
             $orderBy = $request->input('order_by', 'created_at');
             $direction = $request->input('direction', 'desc');
             
-            // Geçerli order_by kontrol et
+            
             $allowedOrderFields = ['created_at', 'reservation_date', 'total_price', 'status'];
             if (!in_array($orderBy, $allowedOrderFields)) {
                 $orderBy = 'created_at';
@@ -84,7 +83,7 @@ class ReservationController extends Controller
             
             $query->orderBy($orderBy, $direction);
             
-            // Sayfalama
+            
             $reservations = $query->paginate($request->input('per_page', 10));
             
             return response()->json($reservations);
@@ -107,7 +106,7 @@ class ReservationController extends Controller
         try {
             $reservation = Reservation::with(['user', 'tour'])->findOrFail($id);
             
-            // Yetki kontrolü (admin değilse sadece kendi rezervasyonlarını görür)
+            
             if (!auth()->user()->isAdmin() && $reservation->user_id !== auth()->id()) {
                 return response()->json([
                     'message' => 'Bu rezervasyonu görüntüleme yetkiniz yok'
@@ -123,13 +122,11 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Tamamlanan rezervasyonu kaydet
-     */
+
     public function store(Request $request)
     {
         try {
-            // İsteği doğrula
+            
             $validated = $request->validate([
                 'tour_id' => 'required|exists:tours,id',
                 'total_price' => 'required|numeric|min:0',
@@ -140,10 +137,10 @@ class ReservationController extends Controller
                 'installment' => 'nullable|integer|min:1'
             ]);
 
-            // Kullanıcı ID'si al (kimlik doğrulama gerektiren bir route)
+           
             $user_id = auth()->id();
             
-            // Rezervasyon oluştur
+            
             $reservation = new Reservation();
             $reservation->user_id = $user_id;
             $reservation->tour_id = $validated['tour_id'];
@@ -155,27 +152,27 @@ class ReservationController extends Controller
             $reservation->participant_count = $request->input('participant_count', 1);
             $reservation->notes = $request->input('notes', '');
             
-            // Kaydı oluştur
+            
             $reservation->save();
             
-            // İlişkili tur verilerini yükle
+            
             $reservation->load('tour');
             
-            // Başarılı yanıt döndür
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Rezervasyon başarıyla kaydedildi',
                 'reservation' => $reservation
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Validasyon hatalarını yanıtla
+           
             return response()->json([
                 'success' => false,
                 'message' => 'Doğrulama hatası',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            // Genel hataları yanıtla
+           
             \Log::error('Rezervasyon kaydederken hata: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all()
@@ -190,7 +187,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Rezervasyonu güncelle
+
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -200,19 +197,19 @@ class ReservationController extends Controller
     {
         $reservation = Reservation::findOrFail($id);
         
-        // Yetki kontrolü (admin değilse sadece kendi rezervasyonlarını güncelleyebilir)
+        
         if (!auth()->user()->isAdmin() && $reservation->user_id !== auth()->id()) {
             return response()->json([
                 'message' => 'Bu rezervasyonu güncelleme yetkiniz yok'
             ], 403);
         }
         
-        // Kullanıcı ve admin için farklı validasyon kuralları
+        
         $rules = [
             'special_requests' => 'nullable|string|max:500',
         ];
         
-        // Admin ise daha fazla alan güncellenebilir
+        
         if (auth()->user()->isAdmin()) {
             $rules = array_merge($rules, [
                 'user_id' => 'sometimes|exists:users,id',
@@ -223,12 +220,12 @@ class ReservationController extends Controller
                 'payment_method' => 'nullable|string|max:50',
             ]);
         } else {
-            // Normal kullanıcılar sadece iptal edebilir ve özel isteklerini güncelleyebilir
+            
             $rules = array_merge($rules, [
                 'status' => 'sometimes|in:cancelled',
             ]);
             
-            // İptal edilmiş rezervasyonları güncelleyemez
+           
             if ($reservation->status === 'cancelled') {
                 return response()->json([
                     'message' => 'İptal edilmiş rezervasyonları güncelleyemezsiniz'
@@ -246,10 +243,10 @@ class ReservationController extends Controller
         }
         
         try {
-            // Güncelleme öncesi mevcut değerleri sakla
+           
             $oldStatus = $reservation->status;
             
-            // Toplam fiyatı güncelle (tur_id veya katılımcı sayısı değiştiyse)
+            
             if ((auth()->user()->isAdmin() && ($request->has('tour_id') || $request->has('participant_count')))) {
                 $tour = Tour::findOrFail($request->tour_id ?? $reservation->tour_id);
                 $participants = $request->participant_count ?? $reservation->participant_count;
@@ -264,7 +261,7 @@ class ReservationController extends Controller
                 }
             }
             
-            // Diğer alanları güncelle
+            
             if (auth()->user()->isAdmin()) {
                 if ($request->has('user_id')) {
                     $reservation->user_id = $request->user_id;
@@ -289,7 +286,7 @@ class ReservationController extends Controller
             
             $reservation->save();
             
-            // İlişkili verileri yükle
+            
             $reservation->load(['user', 'tour']);
             
             // Durum değiştiyse e-posta gönder
@@ -310,7 +307,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Rezervasyonu sil
+
      *
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
@@ -320,7 +317,7 @@ class ReservationController extends Controller
         try {
             $reservation = Reservation::findOrFail($id);
             
-            // Sadece adminler silebilir
+            
             if (!auth()->user()->isAdmin()) {
                 return response()->json([
                     'message' => 'Bu rezervasyonu silme yetkiniz yok'
@@ -341,7 +338,7 @@ class ReservationController extends Controller
     }
     
     /**
-     * Rezervasyon istatistiklerini getir (sadece adminler için)
+
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -355,18 +352,18 @@ class ReservationController extends Controller
         }
         
         try {
-            // Toplam rezervasyon sayısı
+            
             $totalReservations = Reservation::count();
             
-            // Duruma göre rezervasyon sayıları
+           
             $confirmedCount = Reservation::where('status', 'confirmed')->count();
             $pendingCount = Reservation::where('status', 'pending')->count();
             $cancelledCount = Reservation::where('status', 'cancelled')->count();
             
-            // Toplam gelir (onaylanmış rezervasyonlar)
+            
             $totalIncome = Reservation::where('status', 'confirmed')->sum('total_price');
             
-            // Son 6 ay için aylık rezervasyon sayıları
+            
             $monthlyCounts = [];
             for ($i = 5; $i >= 0; $i--) {
                 $month = Carbon::now()->subMonths($i);
@@ -381,7 +378,7 @@ class ReservationController extends Controller
                 ];
             }
             
-            // En çok rezervasyon yapılan 5 tur
+            
             $topTours = Tour::withCount(['reservations' => function ($query) {
                 $query->where('status', 'confirmed');
             }])
@@ -416,7 +413,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Admin için rezervasyon listesi getir (tüm rezervasyonlar)
+
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
@@ -426,17 +423,17 @@ class ReservationController extends Controller
         try {
             $query = Reservation::with(['user', 'tour']);
             
-            // Tur bazlı filtreleme
+           
             if ($request->has('tour_id')) {
                 $query->where('tour_id', $request->tour_id);
             }
             
-            // Durum bazlı filtreleme
+            
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
             
-            // Arama filtresi (tur adı veya kullanıcı adı/e-postası)
+            
             if ($search = $request->input('search')) {
                 $query->whereHas('tour', function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%");
@@ -446,11 +443,11 @@ class ReservationController extends Controller
                 });
             }
             
-            // Sıralama
+            
             $orderBy = $request->input('order_by', 'created_at');
             $direction = $request->input('direction', 'desc');
             
-            // Geçerli order_by kontrol et
+            
             $allowedOrderFields = ['created_at', 'reservation_date', 'total_price', 'status'];
             if (!in_array($orderBy, $allowedOrderFields)) {
                 $orderBy = 'created_at';
@@ -458,7 +455,7 @@ class ReservationController extends Controller
             
             $query->orderBy($orderBy, $direction);
             
-            // Sayfalama
+            
             $reservations = $query->paginate($request->input('per_page', 10));
             
             return response()->json($reservations);
@@ -471,7 +468,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Admin için yeni rezervasyon oluştur
+
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
@@ -496,7 +493,7 @@ class ReservationController extends Controller
         }
         
         try {
-            // Tur fiyatını ve toplam fiyatı hesapla
+            
             $tour = Tour::findOrFail($request->tour_id);
             $totalPrice = $tour->price * $request->participant_count;
             
@@ -511,7 +508,7 @@ class ReservationController extends Controller
                 'special_requests' => $request->special_requests,
             ]);
             
-            // İlişkili verileri yükle
+            
             $reservation->load(['user', 'tour']);
             
             return response()->json([
@@ -527,7 +524,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Admin için rezervasyonu güncelle
+
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -555,7 +552,7 @@ class ReservationController extends Controller
                 ], 422);
             }
             
-            // Toplam fiyatı güncelle (tur_id veya katılımcı sayısı değiştiyse)
+  
             if ($request->has('tour_id') || $request->has('participant_count')) {
                 $tourId = $request->has('tour_id') ? $request->tour_id : $reservation->tour_id;
                 $participantCount = $request->has('participant_count') ? $request->participant_count : $reservation->participant_count;
@@ -566,7 +563,7 @@ class ReservationController extends Controller
                 $reservation->total_price = $totalPrice;
             }
             
-            // Değerleri güncelle
+           
             if ($request->has('user_id')) $reservation->user_id = $request->user_id;
             if ($request->has('tour_id')) $reservation->tour_id = $request->tour_id;
             if ($request->has('reservation_date')) $reservation->reservation_date = $request->reservation_date;
@@ -577,7 +574,7 @@ class ReservationController extends Controller
             
             $reservation->save();
             
-            // İlişkili verileri yükle
+            
             $reservation->load(['user', 'tour']);
             
             return response()->json([
@@ -593,7 +590,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Admin için rezervasyonu sil
+
      *
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
@@ -616,7 +613,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Admin için rezervasyonu göster
+
      *
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
@@ -636,7 +633,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Rezervasyon durumunu güncelle
+
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id

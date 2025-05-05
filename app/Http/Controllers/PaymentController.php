@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 class PaymentController extends Controller
 {
     /**
-     * Ödeme işlemini başlat ve simüle et
+     * Ödeme işlemini başlatıyorum ve simüle ediyorum simdilik
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
@@ -18,7 +18,7 @@ class PaymentController extends Controller
     public function processPayment(Request $request)
     {
         try {
-            // İsteği doğrula
+            
             $validated = $request->validate([
                 'reservation_id' => 'nullable|exists:reservations,id',
                 'tour_id' => 'required|exists:tours,id',
@@ -33,16 +33,16 @@ class PaymentController extends Controller
                 'participant_count' => 'required|integer|min:1',
             ]);
 
-            // Benzersiz bir işlem ID'si oluştur
+            
             $transactionId = 'TR' . date('Ymd') . strtoupper(Str::random(6));
 
-            // Ödeme metoduna göre simüle et
+            
             $paymentSuccess = true;
             $paymentDetails = [];
 
-            // Kredi kartı ödeme simülasyonu
+            
             if ($request->payment_method === 'credit_card') {
-                // Güvenlik için kart numarasını maskele
+                
                 $maskedCardNumber = substr($request->card_number, 0, 4) . ' **** **** ' . substr($request->card_number, -4);
                 
                 $paymentDetails = [
@@ -62,7 +62,7 @@ class PaymentController extends Controller
                     ], 400);
                 }
             } 
-            // Banka transferi simülasyonu
+            
             else if ($request->payment_method === 'bank_transfer') {
                 $paymentDetails = [
                     'bank_reference' => $transactionId,
@@ -70,7 +70,7 @@ class PaymentController extends Controller
                     'instructions' => 'Lütfen açıklama kısmına rezervasyon ID numaranızı yazınız.'
                 ];
             }
-            // Nakit ödeme simülasyonu
+            
             else if ($request->payment_method === 'cash') {
                 $paymentDetails = [
                     'reference' => $transactionId,
@@ -78,7 +78,7 @@ class PaymentController extends Controller
                 ];
             }
 
-            // Eğer rezervasyon ID yoksa ve ödeme başarılıysa, yeni bir rezervasyon oluştur
+            
             $reservation = null;
             if (!$request->reservation_id && $paymentSuccess) {
                 $reservation = new Reservation();
@@ -92,7 +92,7 @@ class PaymentController extends Controller
                 $reservation->payment_id = $transactionId;
                 $reservation->save();
             } 
-            // Varolan rezervasyonu güncelle
+          
             else if ($request->reservation_id && $paymentSuccess) {
                 $reservation = Reservation::findOrFail($request->reservation_id);
                 $reservation->status = 'confirmed';
@@ -101,12 +101,12 @@ class PaymentController extends Controller
                 $reservation->save();
             }
 
-            // İlişkili tur verilerini yükle
+            
             if ($reservation) {
                 $reservation->load('tour');
             }
 
-            // Başarılı yanıt döndür
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Ödeme başarıyla tamamlandı',
@@ -137,7 +137,7 @@ class PaymentController extends Controller
     public function checkPaymentStatus($transactionId)
     {
         try {
-            // Veritabanında bu işlem ID'sine sahip rezervasyon ara
+            
             $reservation = Reservation::where('payment_id', $transactionId)->first();
             
             if (!$reservation) {
@@ -147,7 +147,7 @@ class PaymentController extends Controller
                 ], 404);
             }
 
-            // Rezervasyon ve ilişkili verileri yükle
+            
             $reservation->load(['tour', 'user']);
             
             return response()->json([
@@ -183,7 +183,7 @@ class PaymentController extends Controller
 
             $reservation = Reservation::findOrFail($request->reservation_id);
             
-            // Sadece onaylanmış rezervasyonlar iptal edilebilir
+            
             if ($reservation->status !== 'confirmed') {
                 return response()->json([
                     'success' => false,
@@ -191,11 +191,11 @@ class PaymentController extends Controller
                 ], 400);
             }
             
-            // Rezervasyonu iptal et
+            
             $reservation->status = 'cancelled';
             $reservation->save();
             
-            // Geri ödeme simülasyonu
+          
             $refundId = 'RF' . date('Ymd') . strtoupper(Str::random(6));
             
             return response()->json([
