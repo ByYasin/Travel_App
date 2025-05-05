@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * Kullanıcı kaydı
+
      */
     public function register(Request $request)
     {
@@ -26,8 +26,8 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        // User rolü ID'si 1'dir
-        $userRoleId = 1; // Varsayılan user rolü (sabit değer)
+        
+        $userRoleId = 1; 
         
         try {
             $user = User::create([
@@ -37,17 +37,17 @@ class AuthController extends Controller
                 'role_id' => $userRoleId
             ]);
             
-            // SPA için bir token oluştur - bu artık frontend tarafında saklanmayacak
+            
             $token = $user->createToken('auth_token')->plainTextToken;
 
             Log::info('Register başarılı', ['user_id' => $user->id, 'role_id' => $userRoleId]);
             
-            // Kullanıcıyı otomatik olarak giriş yap
+            
             Auth::login($user);
             
             return response()->json([
                 'user' => $user,
-                'token' => $token // Frontend için hala token dönebiliriz, ama oturum zaten kurulmuş olacak
+                'token' => $token 
             ]);
         } catch (\Exception $e) {
             Log::error('Register başarısız', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
@@ -56,7 +56,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Kullanıcı girişi
+
      */
     public function login(Request $request)
     {
@@ -68,20 +68,20 @@ class AuthController extends Controller
             'remember' => ['boolean']
         ]);
         
-        // Giriş denemesi - Auth facade kullanarak
+   
         if (!Auth::attempt($request->only('email', 'password'), $request->remember)) {
             Log::warning('Login başarısız', ['email' => $request->email]);
             
-            // 401 hatası döndür - Giriş başarısız
+            
             return response()->json([
                 'message' => 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol ediniz.'
             ], 401);
         }
 
-        // Kullanıcı veritabanında var mı kontrol et
+        
         $user = User::where('email', $request->email)->first();
         
-        // Kullanıcı bulunamadıysa (veritabanı temizlemesi vb. sebeplerle) 
+        
         if (!$user) {
             Log::warning('Login başarısız: Kullanıcı veritabanında yok', ['email' => $request->email]);
             return response()->json([
@@ -89,10 +89,10 @@ class AuthController extends Controller
             ], 401);
         }
         
-        // Eski tokenları temizle
+        
         $user->tokens()->delete();
         
-        // Yeni token oluştur
+        
         $token = $user->createToken('auth_token')->plainTextToken;
 
         Log::info('Login başarılı', ['user_id' => $user->id]);
@@ -104,19 +104,19 @@ class AuthController extends Controller
     }
 
     /**
-     * Kullanıcı çıkışı
+    
      */
     public function logout(Request $request)
     {
         Log::info('Logout isteği geldi', ['user_id' => $request->user()->id]);
         
-        // Kullanıcının tüm tokenlarını sil
+        
         $request->user()->tokens()->delete();
         
-        // Oturumu sonlandır
+        
         Auth::guard('web')->logout();
         
-        // CSRF token'ı yenile
+       
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -126,7 +126,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Kullanıcı bilgilerini döndür
+
      */
     public function user(Request $request)
     {
@@ -136,7 +136,7 @@ class AuthController extends Controller
     }
     
     /**
-     * Kullanıcı profil bilgilerini günceller
+     
      */
     public function updateProfile(Request $request)
     {
@@ -153,24 +153,24 @@ class AuthController extends Controller
             'address' => ['nullable', 'string', 'max:255'],
         ]);
         
-        // Temel bilgileri güncelle
+        
         $user->name = $request->name;
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->address = $request->address;
         
-        // Cinsiyet bilgisini güncelle
+        
         if ($request->has('gender')) {
             $user->gender = $request->gender;
         }
         
-        // Doğum tarihi bilgisini güncelle
+        
         if ($request->has('birthdate')) {
             try {
                 $user->birthdate = $request->birthdate;
             } catch (\Exception $e) {
                 Log::error('Doğum tarihi dönüşüm hatası', ['error' => $e->getMessage(), 'birthdate' => $request->birthdate]);
-                // Hata durumunda null atama
+                
                 $user->birthdate = null;
             }
         }
@@ -183,7 +183,7 @@ class AuthController extends Controller
     }
     
     /**
-     * Kullanıcı şifresini günceller
+     
      */
     public function updatePassword(Request $request)
     {
@@ -196,7 +196,7 @@ class AuthController extends Controller
         
         $user = $request->user();
         
-        // Mevcut şifreyi kontrol et
+        
         if (!Hash::check($request->current_password, $user->password)) {
             Log::warning('Şifre güncelleme başarısız: Mevcut şifre hatalı', ['user_id' => $user->id]);
             

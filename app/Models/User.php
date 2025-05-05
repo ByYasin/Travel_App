@@ -14,7 +14,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+
      *
      * @var array<int, string>
      */
@@ -32,7 +32,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+
      *
      * @var array<int, string>
      */
@@ -42,7 +42,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+
      *
      * @var array<string, string>
      */
@@ -70,17 +70,13 @@ class User extends Authenticatable
         return $this->role_id === Role::ADMIN;
     }
 
-    /**
-     * Get the favorites for the user.
-     */
+
     public function favorites()
     {
         return $this->hasMany(Favorite::class);
     }
 
-    /**
-     * Get the tours that the user has favorited.
-     */
+
     public function favoriteTours()
     {
         return $this->belongsToMany(Tour::class, 'favorites', 'user_id', 'tour_id')
@@ -88,24 +84,24 @@ class User extends Authenticatable
     }
 
     /**
-     * Kullanıcının tur ID'sine göre favori durumunu kontrol eder
+     * Kullanıcının tur ID'sine göre favori durumunu kontrol et
      * @param int $tourId
      * @return bool
      */
     public function hasFavorited($tourId)
     {
-        // Gerekli kontroller
+        
         if (!$tourId || !is_numeric($tourId)) {
             return false;
         }
         
         try {
-            // Kullanıcının bu tur için favorisi var mı?
+            
             return $this->favorites()
                 ->where('tour_id', $tourId)
                 ->exists();
         } catch (\Exception $e) {
-            // Hata durumunda log oluştur ve false döndür
+            
             \Log::error('Favori kontrolü sırasında hata: ' . $e->getMessage());
             return false;
         }

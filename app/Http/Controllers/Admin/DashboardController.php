@@ -18,9 +18,6 @@ class DashboardController extends Controller
      */
     public function __construct()
     {
-        // Route dosyasında middleware zaten tanımlandığı için bu satırları kaldırın
-        // $this->middleware('auth');
-        // $this->middleware('admin');
     }
 
     /**

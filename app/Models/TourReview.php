@@ -13,7 +13,7 @@ class TourReview extends Model
     use HasFactory, SoftDeletes;
 
     /**
-     * The attributes that are mass assignable.
+
      *
      * @var array<int, string>
      */
@@ -27,7 +27,7 @@ class TourReview extends Model
     ];
 
     /**
-     * The attributes that should be cast.
+
      *
      * @var array<string, string>
      */
@@ -37,40 +37,32 @@ class TourReview extends Model
         'likes_count' => 'integer',
     ];
 
-    /**
-     * Get the tour that owns the review.
-     */
+
     public function tour(): BelongsTo
     {
         return $this->belongsTo(Tour::class);
     }
 
-    /**
-     * Get the user that wrote the review.
-     */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the replies for this review.
-     */
+
     public function replies(): HasMany
     {
         return $this->hasMany(TourReviewReply::class, 'review_id');
     }
 
-    /**
-     * Get the likes for this review.
-     */
+
     public function likes(): HasMany
     {
         return $this->hasMany(TourReviewLike::class, 'review_id');
     }
 
     /**
-     * Check if the given user has liked this review.
+
      *
      * @param int|null $userId
      * @return bool

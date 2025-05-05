@@ -18,9 +18,7 @@ class UserController extends Controller
      */
     public function __construct()
     {
-        // Middleware'ler route dosyasında tanımlanmalıdır
-        // $this->middleware('auth');
-        // $this->middleware('admin');
+
     }
 
     /**
@@ -34,7 +32,7 @@ class UserController extends Controller
         try {
             $query = User::with('role');
             
-            // Arama filtresi
+            
             if ($search = $request->input('search')) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -42,7 +40,7 @@ class UserController extends Controller
                 });
             }
             
-            // Rol filtresi
+            
             if ($role = $request->input('role')) {
                 if ($role == 'admin') {
                     $query->where('role_id', Role::ADMIN);
@@ -51,11 +49,11 @@ class UserController extends Controller
                 }
             }
             
-            // Sıralama
+            
             $orderBy = $request->input('order_by', 'created_at');
             $direction = $request->input('direction', 'desc');
             
-            // Geçerli order_by kontrol et
+            
             $allowedOrderFields = ['name', 'email', 'created_at'];
             if (!in_array($orderBy, $allowedOrderFields)) {
                 $orderBy = 'created_at';
@@ -63,10 +61,10 @@ class UserController extends Controller
             
             $query->orderBy($orderBy, $direction);
             
-            // Sayfalama
+            
             $users = $query->paginate($request->input('per_page', 10));
             
-            // Kullanıcı verileri formatla
+           
             $users->getCollection()->transform(function ($user) {
                 $roles = [];
                 if ($user->role) {
@@ -112,7 +110,6 @@ class UserController extends Controller
     }
 
     /**
-     * Yeni kullanıcı oluştur
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
@@ -135,15 +132,15 @@ class UserController extends Controller
                 ], 422);
             }
             
-            // Role ID'yi belirle
-            $role_id = Role::USER; // Varsayılan olarak normal kullanıcı
+
+            $role_id = Role::USER; 
             if ($request->has('roles') && is_array($request->roles)) {
                 if (in_array('admin', $request->roles)) {
                     $role_id = Role::ADMIN;
                 }
             }
             
-            // Kullanıcı oluştur
+           
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -152,7 +149,7 @@ class UserController extends Controller
                 'is_active' => $request->filled('is_active') ? $request->is_active : true
             ]);
             
-            // Rol bilgisini ekle
+            
             $user->roles = $request->has('roles') && is_array($request->roles) ? $request->roles : ['user'];
             
             return response()->json([
@@ -168,7 +165,6 @@ class UserController extends Controller
     }
 
     /**
-     * Kullanıcıyı güncelle
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -202,7 +198,7 @@ class UserController extends Controller
             $user->email = $request->email;
             $user->is_active = $request->is_active;
             
-            // Opsiyonel alanlar
+
             if ($request->has('gender')) {
                 $user->gender = $request->gender;
             }
@@ -219,12 +215,12 @@ class UserController extends Controller
                 $user->address = $request->address;
             }
             
-            // Şifre güncelleme (isteğe bağlı)
+            
             if ($request->filled('password')) {
                 $user->password = Hash::make($request->password);
             }
             
-            // Rol atama
+           
             if ($request->has('roles') && is_array($request->roles)) {
                 if (in_array('admin', $request->roles)) {
                     $user->role_id = Role::ADMIN;
@@ -248,7 +244,6 @@ class UserController extends Controller
     }
 
     /**
-     * Kullanıcıyı sil
      *
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
@@ -258,14 +253,14 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
             
-            // Admin silme kontrolü (kendini silmeye çalışıyorsa veya başka bir admin'i)
+
             if (auth()->check() && $user->id === auth()->id()) {
                 return response()->json([
                     'message' => 'Kendi hesabınızı silemezsiniz'
                 ], 403);
             }
             
-            // Son admin kontrolü
+
             if ($user->role_id === Role::ADMIN) {
                 $adminCount = User::where('role_id', Role::ADMIN)->count();
                 if ($adminCount <= 1) {
@@ -289,7 +284,7 @@ class UserController extends Controller
     }
     
     /**
-     * Rol listesini getir
+
      *
      * @return \Illuminate\Http\JsonResponse
      */

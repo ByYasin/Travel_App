@@ -11,27 +11,25 @@ use Illuminate\Support\Str;
 
 class TourController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         try {
-            // API response formatını kontrol et
+            
             $format = request()->input('format', 'json');
             
-            // Veritabanındaki tüm turları alalım
+            
             $tours = Tour::with('category')->get();
             
-            // API yanıtı için veriyi düzenleyelim
+            
             $result = [];
             foreach ($tours as $tour) {
                 try {
-                    // Bazı alanlar null ise varsayılan değerlerle doldur
+                   
                     $includedArray = [];
                     $notIncludedArray = [];
                     
-                    // included alanı için kontrol
+                    
                     if (!empty($tour->included)) {
                         if (is_string($tour->included)) {
                             try {
@@ -44,7 +42,7 @@ class TourController extends Controller
                         }
                     }
                     
-                    // not_included alanı için kontrol
+                   
                     if (!empty($tour->not_included)) {
                         if (is_string($tour->not_included)) {
                             try {
@@ -86,7 +84,7 @@ class TourController extends Controller
                         'exception' => $innerException
                     ]);
                     
-                    // Hatalı tur yerine varsayılan değerler gönder
+                   
                     $result[] = [
                         'id' => $tour->id ?? 0,
                         'title' => 'Hatalı Tur Kaydı',
@@ -100,7 +98,7 @@ class TourController extends Controller
                 }
             }
             
-            // Yanıt formatını belirle
+            
             if ($format === 'debug') {
                 return response()->json([
                     'count' => count($result),
@@ -119,7 +117,7 @@ class TourController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             
-            // Kullanıcı dostu hata mesajı döndür
+            
             return response()->json([
                 'message' => 'Turlar yüklenirken bir hata oluştu. Teknik ekip bilgilendirildi.',
                 'error' => true,
@@ -129,17 +127,13 @@ class TourController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
         try {
@@ -158,15 +152,15 @@ class TourController extends Controller
                 'status' => 'required|in:active,inactive,pending'
             ]);
 
-            // Slug oluştur
+            
             $validated['slug'] = Str::slug($validated['title']);
 
-            // featured_image yoksa varsayılan bir değer ata
+            
             if (!isset($validated['featured_image']) || empty($validated['featured_image'])) {
                 $validated['featured_image'] = 'https://via.placeholder.com/800x600?text=Tur+Görseli';
             }
             
-            // included ve not_included yoksa varsayılan boş dizi ata
+            
             if (!isset($validated['included']) || (is_string($validated['included']) && empty($validated['included']))) {
                 $validated['included'] = '[]';
             }
@@ -175,7 +169,7 @@ class TourController extends Controller
                 $validated['not_included'] = '[]';
             }
             
-            // JSON alanları decode et ve array olarak kaydet
+            
             if (isset($validated['gallery']) && is_string($validated['gallery'])) {
                 $validated['gallery'] = json_decode($validated['gallery'], true);
             }
@@ -188,13 +182,13 @@ class TourController extends Controller
                 $validated['not_included'] = json_decode($validated['not_included'], true);
             }
             
-            // Debug bilgisi
+            
             \Log::info('Tur ekleme verileri:', $validated);
             
-            // Tur oluştur
+            
             $tour = Tour::create($validated);
             
-            // Önbelleği temizle
+           
             Cache::forget('tours');
             if ($tour->category_id) {
                 $category = TourCategory::find($tour->category_id);
@@ -208,7 +202,7 @@ class TourController extends Controller
                 'tour' => $tour
             ], 201);
         } catch (\Exception $e) {
-            // Hata durumunda detaylı bilgi dön
+            
             return response()->json([
                 'message' => $e->getMessage(),
                 'errors' => $request->all(),
@@ -218,9 +212,7 @@ class TourController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show(string $id)
     {
         try {
@@ -233,17 +225,13 @@ class TourController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(Request $request, string $id)
     {
         try {
@@ -264,12 +252,12 @@ class TourController extends Controller
                 'status' => 'sometimes|required|in:active,inactive,pending'
             ]);
             
-            // Eğer başlık değiştiyse, slug'ı da güncelle
+           
             if (isset($validated['title']) && $validated['title'] !== $tour->title) {
                 $validated['slug'] = Str::slug($validated['title']);
             }
             
-            // JSON alanları decode et ve array olarak kaydet
+           
             if (isset($validated['gallery']) && is_string($validated['gallery'])) {
                 $validated['gallery'] = json_decode($validated['gallery'], true);
             }
@@ -282,13 +270,13 @@ class TourController extends Controller
                 $validated['not_included'] = json_decode($validated['not_included'], true);
             }
             
-            // Debug bilgisi
+           
             \Log::info('Tur güncelleme verileri:', $validated);
             
-            // Turu güncelle
+            
             $tour->update($validated);
             
-            // Önbelleği temizle
+            
             Cache::forget('tours');
             if ($tour->category_id) {
                 $category = TourCategory::find($tour->category_id);
@@ -312,23 +300,21 @@ class TourController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id)
     {
         try {
-            // Önce ID kontrolü yapıp, turun var olup olmadığını kontrol edelim
+            
             if (!$id || !is_numeric($id)) {
                 return response()->json([
                     'message' => 'Geçersiz tur ID değeri'
                 ], 400);
             }
             
-            // Tour modelini bulmaya çalış
+            
             $tour = Tour::find($id);
             
-            // Eğer tur bulunamadıysa, uygun bir hata mesajı döndür
+            
             if (!$tour) {
                 return response()->json([
                     'message' => 'Silmeye çalıştığınız tur bulunamadı. Muhtemelen daha önce silinmiş veya hiç var olmamış.',
@@ -336,7 +322,7 @@ class TourController extends Controller
                 ], 404);
             }
             
-            // Kategoriye ait önbelleği temizle
+          
             if ($tour->category_id) {
                 $category = TourCategory::find($tour->category_id);
                 if ($category && $category->slug) {
@@ -344,10 +330,10 @@ class TourController extends Controller
                 }
             }
             
-            // Turu tamamen sil
+           
             $tour->delete();
             
-            // Önbelleği temizle
+            
             Cache::forget('tours');
             
             return response()->json([

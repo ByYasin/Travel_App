@@ -14,15 +14,13 @@ use Illuminate\Support\Facades\Notification;
 
 class ReservationController extends Controller
 {
-    /**
-     * Tüm rezervasyonları listele
-     */
+
     public function index(Request $request)
     {
         try {
             $query = Reservation::with(['user', 'tour']);
 
-            // Filtreleme işlemleri
+           
             if ($request->has('user_id') && $request->user_id) {
                 $query->where('user_id', $request->user_id);
             }
@@ -46,12 +44,12 @@ class ReservationController extends Controller
                 });
             }
 
-            // Sıralama
+           
             $sortField = $request->input('sort_field', 'created_at');
             $sortDirection = $request->input('sort_direction', 'desc');
             $query->orderBy($sortField, $sortDirection);
 
-            // Sayfalama
+            
             $perPage = $request->input('per_page', 10);
             $reservations = $query->paginate($perPage);
 
@@ -68,16 +66,13 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Web rotası için tüm rezervasyonları listele
-     * web.php'deki reservations-list rotası için kullanılır
-     */
+
     public function list(Request $request)
     {
         try {
             $query = Reservation::with(['user', 'tour']);
 
-            // Filtreleme işlemleri
+            
             if ($request->has('user_id') && $request->user_id) {
                 $query->where('user_id', $request->user_id);
             }
@@ -101,7 +96,7 @@ class ReservationController extends Controller
                 });
             }
 
-            // Sıralama - sort_by parametresi için kontrol
+            
             if ($request->has('sort_by') && $request->sort_by) {
                 $sortParts = explode('-', $request->sort_by);
                 if (count($sortParts) == 2) {
@@ -110,11 +105,11 @@ class ReservationController extends Controller
                     $query->orderBy($sortField, $sortDirection);
                 }
             } else {
-                // Varsayılan sıralama
+                
                 $query->orderBy('created_at', 'desc');
             }
 
-            // Sayfalama
+            
             $perPage = $request->input('per_page', 10);
             $reservations = $query->paginate($perPage);
 
@@ -135,9 +130,7 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Belirli bir rezervasyonu göster
-     */
+
     public function show($id)
     {
         try {
@@ -156,9 +149,7 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Yeni bir rezervasyon oluştur
-     */
+
     public function store(Request $request)
     {
         try {
@@ -179,7 +170,7 @@ class ReservationController extends Controller
                 ], 422);
             }
 
-            // Tour fiyatını al ve toplam fiyatı hesapla
+  
             $tour = Tour::findOrFail($request->tour_id);
             $totalPrice = $tour->price * $request->participant_count;
 
@@ -212,13 +203,11 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Rezervasyonu güncelle
-     */
+
     public function update(Request $request, $id)
     {
         try {
-            // where sorgusu yerine findOrFail kullanıyoruz
+            
             $reservation = Reservation::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
@@ -238,23 +227,23 @@ class ReservationController extends Controller
                 ], 422);
             }
 
-            // Önceki durumu sakla
+            
             $oldStatus = $reservation->status;
 
-            // Gerekli alanlarda güncelleme yap
+            
             $reservation->user_id = $request->user_id ?? $reservation->user_id;
             $reservation->tour_id = $request->tour_id ?? $reservation->tour_id;
             $reservation->reservation_date = $request->reservation_date ?? $reservation->reservation_date;
             $reservation->participant_count = $request->participant_count ?? $reservation->participant_count;
             
-            // Status değerini tırnak içinde gönder
+            
             if ($request->has('status')) {
                 $reservation->status = $request->status;
             }
             
             $reservation->special_requests = $request->special_requests ?? $reservation->special_requests;
 
-            // Katılımcı sayısı veya tur değiştiyse toplam fiyatı yeniden hesapla
+            
             if ($request->has('participant_count') || $request->has('tour_id')) {
                 $tourId = $request->tour_id ?? $reservation->tour_id;
                 $tour = Tour::findOrFail($tourId);
@@ -262,10 +251,10 @@ class ReservationController extends Controller
                 $reservation->total_price = $this->calculateTotalPrice($tour->price, $participants);
             }
 
-            // Değişiklikleri kaydet
+            
             $reservation->save();
 
-            // Durum değiştiyse kullanıcıya bildirim gönder
+            
             $user = User::find($reservation->user_id);
             if ($user) {
                 $this->sendStatusNotification($user, $reservation, 'updated');
@@ -285,9 +274,7 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Rezervasyonu sil
-     */
+ 
     public function destroy($id)
     {
         try {
@@ -307,9 +294,7 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Rezervasyon durumunu güncelle
-     */
+
     public function updateStatus(Request $request, $id)
     {
         try {
@@ -328,11 +313,11 @@ class ReservationController extends Controller
             $reservation = Reservation::findOrFail($id);
             $oldStatus = $reservation->status;
             
-            // Status değerini doğrudan atayalım
+            
             $reservation->status = $request->status;
             $reservation->save();
 
-            // Durum değiştiyse kullanıcıya bildirim gönder
+            
             $user = User::find($reservation->user_id);
             if ($user) {
                 $this->sendStatusNotification($user, $reservation, 'status_changed');
@@ -352,9 +337,7 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Kullanıcıları listele
-     */
+
     public function getUsers()
     {
         try {
@@ -373,9 +356,7 @@ class ReservationController extends Controller
         }
     }
 
-    /**
-     * Turları listele
-     */
+
     public function getTours()
     {
         try {
@@ -395,7 +376,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Toplam fiyatı hesapla
+
      * 
      * @param float $price
      * @param int $participants
@@ -403,17 +384,16 @@ class ReservationController extends Controller
      */
     private function calculateTotalPrice($price, $participants)
     {
-        // Basit hesaplama: fiyat * katılımcı sayısı
+        
         $totalPrice = $price * $participants;
         
-        // Yuvarlama işlemi (2 ondalık basamağa)
+
         return round($totalPrice, 2);
     }
 
     /**
-     * Kullanıcıya rezervasyon durum değişikliği bildirimi gönder
      * 
-     * @param \App\Models\User $user - Tek bir User nesnesi olmalı (Collection değil)
+     * @param \App\Models\User $user - Tek bir User nesnesi olmalı bug fix (Collection değil :))
      * @param \App\Models\Reservation $reservation
      * @param string $action
      * @return void
@@ -421,9 +401,9 @@ class ReservationController extends Controller
     private function sendStatusNotification($user, $reservation, $action)
     {
         try {
-            // Collection değil tekil User nesnesi olduğunu kontrol et
+            
             if ($user instanceof \Illuminate\Database\Eloquent\Collection) {
-                // Collection içinden ilk kullanıcıyı al
+                
                 $user = $user->first();
                 if (!$user) {
                     Log::error("Bildirim gönderilemedi: Geçerli kullanıcı bulunamadı");
@@ -431,7 +411,7 @@ class ReservationController extends Controller
                 }
             }
             
-            // Log mesajı oluştur
+            
             Log::info("Rezervasyon bildirimi gönderildi", [
                 'user_id' => $user->id,
                 'reservation_id' => $reservation->id,
@@ -440,7 +420,7 @@ class ReservationController extends Controller
                 'participant_count' => $reservation->participant_count
             ]);
             
-            // Bildirim mesajını hazırla
+            
             $message = '';
             switch ($reservation->status) {
                 case 'confirmed':
@@ -456,12 +436,12 @@ class ReservationController extends Controller
                     $message = 'Rezervasyon durumunuz güncellendi.';
             }
             
-            // Gerçek uygulamada bildirim gönderimi
+            
             if (class_exists('\App\Notifications\ReservationStatusChanged')) {
                 Notification::send($user, new \App\Notifications\ReservationStatusChanged($reservation, $action, $message));
             }
             
-            // Log kaydı oluştur
+            
             Log::info("Bildirim içeriği: {$message}", [
                 'user_id' => $user->id,
                 'reservation_id' => $reservation->id

@@ -13,7 +13,7 @@ class TourCategory extends Model
     use HasFactory, SoftDeletes;
 
     /**
-     * The attributes that are mass assignable.
+
      *
      * @var array<int, string>
      */
@@ -29,8 +29,7 @@ class TourCategory extends Model
     ];
 
     /**
-     * The attributes that should be cast.
-     *
+
      * @var array<string, string>
      */
     protected $casts = [
@@ -40,41 +39,31 @@ class TourCategory extends Model
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Bu kategoriye ait turlar
-     */
+
     public function tours(): HasMany
     {
         return $this->hasMany(Tour::class, 'category_id');
     }
     
-    /**
-     * Bu kategorinin üst kategorisi
-     */
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(TourCategory::class, 'parent_id');
     }
     
-    /**
-     * Bu kategorinin alt kategorileri
-     */
+
     public function children(): HasMany
     {
         return $this->hasMany(TourCategory::class, 'parent_id');
     }
 
-    /**
-     * Kategorinin aktif olup olmadığını kontrol et
-     */
+
     public function isActive(): bool
     {
         return $this->is_active;
     }
     
-    /**
-     * Daha iyi URL yapısı için
-     */
+
     public function getRouteKeyName(): string
     {
         return 'slug';

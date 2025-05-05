@@ -21,40 +21,40 @@ class ReportController extends Controller
     public function getSummary(Request $request)
     {
         try {
-            // Tarih aralığı parametrelerini al
+            
             $dateRange = $this->getDateRange($request->input('period', 'this-month'));
             $startDate = $dateRange['start'];
             $endDate = $dateRange['end'];
             
-            // Toplam gelir
+         
             $totalIncome = Reservation::where('status', 'confirmed')
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->sum('total_price');
             
-            // Toplam rezervasyon
+           
             $totalReservations = Reservation::whereBetween('created_at', [$startDate, $endDate])
                 ->count();
                 
-            // Ortalama satış
+            
             $averageSale = $totalReservations > 0 
                 ? $totalIncome / $totalReservations 
                 : 0;
                 
-            // Önceki dönem için hesaplamalar (karşılaştırma için)
+            
             $previousRange = $this->getPreviousPeriod($dateRange);
             $prevStartDate = $previousRange['start'];
             $prevEndDate = $previousRange['end'];
             
-            // Önceki dönem toplam gelir
+            
             $prevTotalIncome = Reservation::where('status', 'confirmed')
                 ->whereBetween('created_at', [$prevStartDate, $prevEndDate])
                 ->sum('total_price');
                 
-            // Önceki dönem toplam rezervasyon
+           
             $prevTotalReservations = Reservation::whereBetween('created_at', [$prevStartDate, $prevEndDate])
                 ->count();
                 
-            // Yüzdelik değişimleri hesapla
+           
             $incomeChange = $prevTotalIncome > 0 
                 ? (($totalIncome - $prevTotalIncome) / $prevTotalIncome) * 100 
                 : 100;
@@ -63,7 +63,7 @@ class ReportController extends Controller
                 ? (($totalReservations - $prevTotalReservations) / $prevTotalReservations) * 100 
                 : 100;
                 
-            // Önceki dönem ortalama satış
+            
             $prevAverageSale = $prevTotalReservations > 0 
                 ? $prevTotalIncome / $prevTotalReservations 
                 : 0;
@@ -105,15 +105,15 @@ class ReportController extends Controller
     public function getMonthlyIncome(Request $request)
     {
         try {
-            // Tarih aralığı parametrelerini al
+            
             $dateRange = $this->getDateRange($request->input('period', 'this-month'));
             $startDate = $dateRange['start'];
             $endDate = $dateRange['end'];
             
-            // Sonuçları içeren dizi
+            
             $result = [];
             
-            // Eğer aralık 6 aydan fazlaysa, aylık grupla
+           
             if ($startDate->diffInMonths($endDate) > 6) {
                 $result = DB::table('reservations')
                     ->select(DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'), DB::raw('SUM(total_price) as total'))
@@ -130,7 +130,7 @@ class ReportController extends Controller
                         ];
                     });
             } else {
-                // Haftalık grupla
+              
                 $result = DB::table('reservations')
                     ->select(DB::raw('YEAR(created_at) as year, WEEK(created_at) as week'), DB::raw('SUM(total_price) as total'))
                     ->where('status', 'confirmed')
@@ -170,15 +170,15 @@ class ReportController extends Controller
     public function getTopTours(Request $request)
     {
         try {
-            // Tarih aralığı parametrelerini al
+           
             $dateRange = $this->getDateRange($request->input('period', 'this-month'));
             $startDate = $dateRange['start'];
             $endDate = $dateRange['end'];
             
-            // Limit parametresi (varsayılan 10)
+            
             $limit = $request->input('limit', 10);
             
-            // En çok satan turları hesapla
+            
             $topTours = Tour::select('tours.*')
                 ->selectRaw('COUNT(reservations.id) as reservation_count')
                 ->selectRaw('SUM(reservations.total_price) as total_sales')
@@ -190,19 +190,19 @@ class ReportController extends Controller
                 ->limit($limit)
                 ->get();
                 
-            // Tur satış trendi hesaplamak için önceki dönemi al
+            
             $previousRange = $this->getPreviousPeriod($dateRange);
             $prevStartDate = $previousRange['start'];
             $prevEndDate = $previousRange['end'];
             
             $result = $topTours->map(function ($tour) use ($prevStartDate, $prevEndDate) {
-                // Önceki dönem satışları
+                
                 $prevSales = Reservation::where('tour_id', $tour->id)
                     ->where('status', 'confirmed')
                     ->whereBetween('created_at', [$prevStartDate, $prevEndDate])
                     ->sum('total_price');
                 
-                // Trend hesapla (up, stable, down)
+               
                 $trend = 'stable';
                 if ($prevSales > 0) {
                     $change = (($tour->total_sales - $prevSales) / $prevSales) * 100;
@@ -213,7 +213,7 @@ class ReportController extends Controller
                     }
                 }
                 
-                // Ortalama değerlendirme
+                
                 $rating = $tour->reviews()->where('status', 'approved')->avg('rating') ?: 0;
                 
                 return [
@@ -238,7 +238,7 @@ class ReportController extends Controller
     }
     
     /**
-     * Kullanıcı demografik verilerini getir
+     * 
      * 
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -246,7 +246,7 @@ class ReportController extends Controller
     public function getUserDemographics(Request $request)
     {
         try {
-            // Yaş gruplarına göre kullanıcıları sayma
+           
             $ageGroups = DB::table('users')
                 ->select(DB::raw('
                     CASE 
@@ -264,7 +264,7 @@ class ReportController extends Controller
                 ->groupBy('age_group')
                 ->get();
                 
-            // Cinsiyete göre kullanıcıları sayma
+            
             $genderDistribution = DB::table('users')
                 ->selectRaw('gender, COUNT(*) as count')
                 ->whereNotNull('gender')
@@ -288,7 +288,7 @@ class ReportController extends Controller
     }
     
     /**
-     * Rezervasyon başına düşen katılımcı sayısı istatistiklerini getir
+    
      * 
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -296,12 +296,12 @@ class ReportController extends Controller
     public function getParticipantStats(Request $request)
     {
         try {
-            // Tarih aralığı parametrelerini al
+            
             $dateRange = $this->getDateRange($request->input('period', 'this-month'));
             $startDate = $dateRange['start'];
             $endDate = $dateRange['end'];
             
-            // Katılımcı sayısı dağılımı
+            
             $participantDistribution = DB::table('reservations')
                 ->selectRaw('participant_count, COUNT(*) as count')
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -310,7 +310,7 @@ class ReportController extends Controller
                 ->orderBy('participant_count')
                 ->get();
                 
-            // Ortalama katılımcı sayısı
+            
             $avgParticipants = Reservation::whereBetween('created_at', [$startDate, $endDate])
                 ->where('status', 'confirmed')
                 ->avg('participant_count') ?: 0;
@@ -329,7 +329,7 @@ class ReportController extends Controller
     }
     
     /**
-     * Belirtilen döneme göre başlangıç ve bitiş tarihlerini hesaplar
+     * 
      * 
      * @param string $period
      * @return array
@@ -399,7 +399,7 @@ class ReportController extends Controller
     }
     
     /**
-     * Mevcut dönemin önceki dönemini hesaplar (karşılaştırma için)
+     * 
      * 
      * @param array $currentRange
      * @return array
@@ -418,7 +418,7 @@ class ReportController extends Controller
     }
     
     /**
-     * Dönem için insan tarafından okunabilir etiket döndürür
+     * -
      * 
      * @param string $period
      * @return string
@@ -451,10 +451,10 @@ class ReportController extends Controller
     public function exportReport(Request $request)
     {
         // Excel veya PDF oluşturma ve indirme işlemleri burada olacak
-        // İleride maatwebsite/excel veya dompdf gibi paketlerle implementasyon yapılabilir
+        // İleride maatwebsite/excel veya dompdf gibi paketlerle implementasyon yapacagım
         
         return response()->json([
-            'message' => 'Dışa aktarma özelliği yakında eklenecek'
+            'message' => 'Dışa aktarma özelliği yakında eklenecek.'
         ]);
     }
 } 

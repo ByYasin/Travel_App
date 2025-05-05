@@ -10,25 +10,25 @@ use Carbon\Carbon;
 class AnalyticsController extends Controller
 {
     /**
-     * Gerçek zamanlı analiz verilerini döndürür
+
      */
     public function getRealTimeData(Request $request)
     {
-        // Bugün ve dün için tarih aralıkları
+        
         $todayStart = Carbon::today();
         $todayEnd = Carbon::now();
         $yesterdayStart = Carbon::yesterday();
         $yesterdayEnd = Carbon::yesterday()->endOfDay();
         
-        // Bugünkü rezervasyon ve gelir verilerini al
+        
         $todayReservations = $this->getReservationCount($todayStart, $todayEnd);
         $todayIncome = $this->getTotalIncome($todayStart, $todayEnd);
         
-        // Dünkü rezervasyon ve gelir verilerini al
+        
         $yesterdayReservations = $this->getReservationCount($yesterdayStart, $yesterdayEnd);
         $yesterdayIncome = $this->getTotalIncome($yesterdayStart, $yesterdayEnd);
         
-        // Değişim yüzdesini hesapla
+        
         $reservationChange = $yesterdayReservations > 0
             ? (($todayReservations - $yesterdayReservations) / $yesterdayReservations) * 100
             : 0;
@@ -37,34 +37,34 @@ class AnalyticsController extends Controller
             ? (($todayIncome - $yesterdayIncome) / $yesterdayIncome) * 100
             : 0;
         
-        // Aktif kullanıcı sayısını simüle et (gerçek uygulamada bu veri farklı bir kaynaktan gelebilir)
+        
         $activeUsers = rand(5, 50);
         
-        // Bekleyen sepet sayısını al (tamamlanmamış rezervasyonlar)
+        
         $pendingCarts = DB::table('reservations')
             ->where('status', 'pending')
             ->where('created_at', '>=', Carbon::now()->subHours(1))
             ->count();
             
-        // Bir saat önceki bekleyen sepet sayısını al
+        
         $previousHourPendingCarts = DB::table('reservations')
             ->where('status', 'pending')
             ->where('created_at', '>=', Carbon::now()->subHours(2))
             ->where('created_at', '<', Carbon::now()->subHours(1))
             ->count();
             
-        // Bekleyen sepet değişim yüzdesini hesapla
+        
         $pendingCartsChange = $previousHourPendingCarts > 0
             ? (($pendingCarts - $previousHourPendingCarts) / $previousHourPendingCarts) * 100
             : 0;
             
-        // Son 24 saat için saatlik ziyaretçi verilerini oluştur (demo için rastgele veriler)
+        
         $hourlyTraffic = $this->getHourlyTrafficData();
         
-        // Dönüşüm oranlarını oluştur (demo için rastgele veriler)
+        
         $conversionRates = $this->getConversionRates();
         
-        // Tüm verileri birleştir ve döndür
+       
         return response()->json([
             'today' => [
                 'reservations' => $todayReservations,
@@ -83,11 +83,11 @@ class AnalyticsController extends Controller
     }
     
     /**
-     * Son rezervasyonları döndürür
+
      */
     public function getRecentReservations(Request $request)
     {
-        // Son 20 rezervasyonu al
+        
         $reservations = DB::table('reservations as r')
             ->join('users as u', 'r.user_id', '=', 'u.id')
             ->join('tours as t', 'r.tour_id', '=', 't.id')
@@ -107,12 +107,11 @@ class AnalyticsController extends Controller
     }
     
     /**
-     * Aktif kullanıcıları döndürür
+
      */
     public function getActiveUsers(Request $request)
     {
-        // Gerçek bir uygulamada bu veri, oturum tablosundan veya bir analitik 
-        // servisinden alınabilir. Burada demo için örnek veri oluşturuyoruz.
+
         
         $demoUsers = [];
         $userCount = rand(3, 15);
@@ -170,7 +169,7 @@ class AnalyticsController extends Controller
     }
     
     /**
-     * Belli bir tarih aralığındaki toplam rezervasyon sayısını döndürür
+
      */
     private function getReservationCount(Carbon $startDate, Carbon $endDate)
     {
@@ -180,7 +179,7 @@ class AnalyticsController extends Controller
     }
     
     /**
-     * Belli bir tarih aralığındaki toplam geliri döndürür
+
      */
     private function getTotalIncome(Carbon $startDate, Carbon $endDate)
     {
@@ -191,14 +190,14 @@ class AnalyticsController extends Controller
     }
     
     /**
-     * Saatlik trafik verilerini oluşturur (demo)
+
      */
     private function getHourlyTrafficData()
     {
         $labels = [];
         $values = [];
         
-        // Son 24 saat için etiketleri oluştur ve her saat için rastgele ziyaretçi sayısı ata
+
         for ($i = 23; $i >= 0; $i--) {
             $hour = Carbon::now()->subHours($i);
             $labels[] = $hour->format('H:00');
@@ -211,14 +210,12 @@ class AnalyticsController extends Controller
         ];
     }
     
-    /**
-     * Dönüşüm oranlarını oluşturur (demo)
-     */
+
     private function getConversionRates()
     {
         // Ziyaretçilerin % kaçı ürün sayfasına gidiyor, 
         // % kaçı sepete ekliyor, % kaçı ödeme yapıyor ve % kaçı tamamlıyor.
-        // Gerçek bir uygulamada bu veriler analitik servislerinden alınabilir.
+        // Bu veriler analitik servislerinden alınabilir.
         return [100, rand(40, 60), rand(20, 40), rand(10, 30), rand(5, 20)];
     }
 } 

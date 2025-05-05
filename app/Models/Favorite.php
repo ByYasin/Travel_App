@@ -10,8 +10,7 @@ class Favorite extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
+
      * @var array<int, string>
      */
     protected $fillable = [
@@ -19,17 +18,13 @@ class Favorite extends Model
         'tour_id'
     ];
 
-    /**
-     * Get the user that owns the favorite.
-     */
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the tour that was favorited.
-     */
+
     public function tour()
     {
         return $this->belongsTo(Tour::class);

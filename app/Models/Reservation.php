@@ -9,9 +9,7 @@ class Reservation extends Model
 {
     use HasFactory;
 
-    /**
-     * Toplu atama yapılabilecek alanlar
-     */
+
     protected $fillable = [
         'user_id',
         'tour_id',
@@ -25,16 +23,14 @@ class Reservation extends Model
         'notes'
     ];
 
-    /**
-     * Status için mümkün değerler
-     */
+
     const STATUS_PENDING = 'pending';
     const STATUS_CONFIRMED = 'confirmed';
     const STATUS_COMPLETED = 'completed';
     const STATUS_CANCELLED = 'cancelled';
 
     /**
-     * The attributes that should be cast.
+
      *
      * @var array<string, string>
      */
@@ -46,7 +42,7 @@ class Reservation extends Model
     ];
 
     /**
-     * Turu getiren ilişki
+
      */
     public function tour()
     {
@@ -54,7 +50,7 @@ class Reservation extends Model
     }
 
     /**
-     * Kullanıcıyı getiren ilişki
+
      */
     public function user()
     {
@@ -62,7 +58,7 @@ class Reservation extends Model
     }
 
     /**
-     * Durum metnini getir
+
      */
     public function getStatusTextAttribute()
     {
@@ -77,7 +73,7 @@ class Reservation extends Model
     }
 
     /**
-     * Kullanıcıya ait rezervasyonları getiren scope
+
      */
     public function scopeByUser($query, $userId)
     {
@@ -85,7 +81,7 @@ class Reservation extends Model
     }
 
     /**
-     * Yaklaşan rezervasyonları getiren scope
+
      */
     public function scopeUpcoming($query)
     {
@@ -93,7 +89,7 @@ class Reservation extends Model
     }
 
     /**
-     * Geçmiş rezervasyonları getiren scope
+
      */
     public function scopePast($query)
     {
@@ -101,7 +97,7 @@ class Reservation extends Model
     }
 
     /**
-     * Reservasyon durumunu kontrol et (onaylı)
+
      */
     public function isConfirmed()
     {
@@ -109,7 +105,7 @@ class Reservation extends Model
     }
 
     /**
-     * Reservasyon durumunu kontrol et (beklemede)
+
      */
     public function isPending()
     {
@@ -117,7 +113,7 @@ class Reservation extends Model
     }
 
     /**
-     * Reservasyon durumunu kontrol et (iptal edilmiş)
+
      */
     public function isCancelled()
     {
@@ -125,7 +121,7 @@ class Reservation extends Model
     }
 
     /**
-     * Reservasyonu iptal et
+
      */
     public function cancel()
     {
@@ -134,7 +130,7 @@ class Reservation extends Model
     }
 
     /**
-     * Reservasyonu onayla
+
      */
     public function confirm()
     {
@@ -143,7 +139,7 @@ class Reservation extends Model
     }
 
     /**
-     * Toplam fiyatı insan tarafından okunabilir formata dönüştür
+
      */
     public function getFormattedPriceAttribute()
     {
@@ -151,7 +147,7 @@ class Reservation extends Model
     }
 
     /**
-     * Durum filtreleri için scope'lar
+
      */
     public function scopeConfirmed($query)
     {

@@ -20,17 +20,13 @@ class TourReviewLike extends Model
         'user_id',
     ];
 
-    /**
-     * Get the review that was liked.
-     */
+
     public function review(): BelongsTo
     {
         return $this->belongsTo(TourReview::class, 'review_id');
     }
 
-    /**
-     * Get the user that liked the review.
-     */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

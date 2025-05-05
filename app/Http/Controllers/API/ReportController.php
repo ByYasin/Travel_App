@@ -10,23 +10,23 @@ use Carbon\Carbon;
 class ReportController extends Controller
 {
     /**
-     * Özet rapor verileri
+
      */
     public function getSummary(Request $request)
     {
         $period = $request->input('period', 'this-month');
         $dateRange = $this->getDateRange($period, $request->input('start_date'), $request->input('end_date'));
         
-        // Önceki dönem için tarih aralığı
+   
         $previousDateRange = $this->getPreviousPeriodRange($period, $dateRange);
         
-        // Mevcut dönem verileri
+   
         $currentData = $this->getPeriodData($dateRange['start'], $dateRange['end']);
         
-        // Önceki dönem verileri
+    
         $previousData = $this->getPeriodData($previousDateRange['start'], $previousDateRange['end']);
         
-        // Değişim yüzdelerini hesapla
+     
         $incomeChange = $previousData['totalIncome'] > 0 
             ? round((($currentData['totalIncome'] - $previousData['totalIncome']) / $previousData['totalIncome']) * 100, 2)
             : 100;
@@ -54,26 +54,26 @@ class ReportController extends Controller
     }
     
     /**
-     * Aylık gelir grafiği için veriler
+
      */
     public function getMonthlyIncome(Request $request)
     {
         $period = $request->input('period', 'this-month');
         $dateRange = $this->getDateRange($period, $request->input('start_date'), $request->input('end_date'));
         
-        // Dönem tipine göre gruplandırma birimi belirle
-        $groupBy = 'day'; // varsayılan
-        $format = 'd M'; // varsayılan format
+   
+        $groupBy = 'day'; 
+        $format = 'd M'; 
         
         if (in_array($period, ['this-year', 'last-year'])) {
             $groupBy = 'month';
             $format = 'F';
         } elseif (in_array($period, ['last-3-months', 'last-6-months'])) {
             $groupBy = 'week';
-            $format = 'W. Hafta'; // W. hafta formatı
+            $format = 'W. Hafta'; 
         }
         
-        // Verileri çek
+       
         $query = DB::table('reservations')
             ->select(
                 DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d') as date"),
@@ -86,7 +86,7 @@ class ReportController extends Controller
             
         $results = $query->get();
         
-        // Sonuçları formatla
+        
         $labels = [];
         $data = [];
         
@@ -103,7 +103,7 @@ class ReportController extends Controller
     }
     
     /**
-     * En çok satan turlar
+ 
      */
     public function getTopTours(Request $request)
     {
@@ -128,10 +128,10 @@ class ReportController extends Controller
             ->limit(10)
             ->get();
             
-        // Trend hesaplama
+        
         foreach ($topTours as $tour) {
-            // Bu hesaplama basit bir örnektir, gerçek hayatta daha karmaşık olabilir
-            $trend = rand(0, 2); // 0: down, 1: stable, 2: up
+            
+            $trend = rand(0, 2); 
             $tour->trend = ['down', 'stable', 'up'][$trend];
         }
         
@@ -139,11 +139,11 @@ class ReportController extends Controller
     }
     
     /**
-     * Kullanıcı demografik verileri
+     
      */
     public function getUserDemographics()
     {
-        // Yaş grupları dağılımı
+        
         $ageGroups = DB::table('users')
             ->select(
                 DB::raw('CASE
@@ -161,7 +161,7 @@ class ReportController extends Controller
             ->orderBy(DB::raw('MIN(TIMESTAMPDIFF(YEAR, birthdate, CURDATE()))'))
             ->get();
             
-        // Cinsiyet dağılımı
+       
         $genderDistribution = DB::table('users')
             ->select('gender', DB::raw('COUNT(*) as count'))
             ->whereNotNull('gender')
@@ -176,14 +176,14 @@ class ReportController extends Controller
     }
     
     /**
-     * Katılımcı istatistikleri
+
      */
     public function getParticipantStats(Request $request)
     {
         $period = $request->input('period', 'this-month');
         $dateRange = $this->getDateRange($period, $request->input('start_date'), $request->input('end_date'));
         
-        // Katılımcı sayısı dağılımı
+  
         $participantDistribution = DB::table('reservations')
             ->select('participant_count', DB::raw('COUNT(*) as count'))
             ->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
@@ -192,7 +192,7 @@ class ReportController extends Controller
             ->orderBy('participant_count')
             ->get();
             
-        // Ortalama katılımcı sayısı
+
         $averageParticipants = DB::table('reservations')
             ->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
             ->whereNotNull('participant_count')
@@ -213,13 +213,13 @@ class ReportController extends Controller
         $period = $request->input('period', 'this-month');
         
         try {
-            // Tarih aralığını al
+            
             $dateRange = $this->getDateRange($period, $request->input('start_date'), $request->input('end_date'));
             
-            // Rapor için gerekli verileri al
+            
             $summaryData = $this->getPeriodData($dateRange['start'], $dateRange['end']);
             
-            // Özet verilerini hazırla
+            
             $reportData = [
                 'period' => $period,
                 'start_date' => $dateRange['start']->format('d.m.Y'),
@@ -230,7 +230,7 @@ class ReportController extends Controller
                 'generated_at' => now()->format('d.m.Y H:i')
             ];
             
-            // En çok satan turları al
+            
             $topTours = DB::table('reservations')
                 ->join('tours', 'reservations.tour_id', '=', 'tours.id')
                 ->select(
@@ -248,10 +248,9 @@ class ReportController extends Controller
                 
             $reportData['top_tours'] = $topTours;
             
-            // PDF için TCPDF veya DOMPDF kullanılabilir
+            
             if ($format === 'pdf') {
-                // PDF oluşturma mantığı burada olacak
-                // Örnek içerik:
+  
                 $content = "Tur Raporu\n\n";
                 $content .= "Dönem: {$reportData['start_date']} - {$reportData['end_date']}\n";
                 $content .= "Toplam Gelir: {$reportData['total_income']} TL\n";
@@ -263,21 +262,20 @@ class ReportController extends Controller
                     $content .= "- {$tour->name}: {$tour->totalSales} TL ({$tour->reservationCount} rezervasyon)\n";
                 }
                 
-                // Header bilgisi
+                
                 $headers = [
                     'Content-Type' => 'application/pdf',
                     'Content-Disposition' => "attachment; filename=tur-raporu-{$period}.pdf",
                 ];
                 
-                // Gerçek projede TCPDF veya DOMPDF ile oluşturulmalı
+                
                 return response($content, 200, $headers);
             } 
             // Excel formatı için
             else if ($format === 'excel') {
-                // Excel oluşturma mantığı burada olacak
-                // PhpSpreadsheet veya Maatwebsite/Excel paketi kullanılabilir
+ 
                 
-                // Örnek içerik (gerçekte CSV olarak)
+                
                 $content = "Dönem,Toplam Gelir,Toplam Rezervasyon,Ortalama Satış\n";
                 $content .= "{$reportData['start_date']} - {$reportData['end_date']},{$reportData['total_income']},{$reportData['total_reservations']},{$reportData['average_sale']}\n\n";
                 $content .= "Tur Adı,Toplam Satış,Rezervasyon Sayısı\n";
@@ -286,7 +284,7 @@ class ReportController extends Controller
                     $content .= "{$tour->name},{$tour->totalSales},{$tour->reservationCount}\n";
                 }
                 
-                // Header bilgisi
+                
                 $headers = [
                     'Content-Type' => 'application/vnd.ms-excel',
                     'Content-Disposition' => "attachment; filename=tur-raporu-{$period}.xlsx",
@@ -308,23 +306,23 @@ class ReportController extends Controller
     }
     
     /**
-     * Belirli bir dönem için verileri getirir
+
      */
     private function getPeriodData($startDate, $endDate)
     {
-        // Toplam gelir
+        
         $totalIncome = DB::table('reservations')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', 'confirmed')
             ->sum('total_price') ?? 0;
             
-        // Toplam rezervasyon
+        
         $totalReservations = DB::table('reservations')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', 'confirmed')
             ->count();
             
-        // Ortalama satış
+       
         $averageSale = $totalReservations > 0 ? ($totalIncome / $totalReservations) : 0;
         
         return [
@@ -335,13 +333,13 @@ class ReportController extends Controller
     }
     
     /**
-     * Dönem seçimine göre tarih aralığı oluşturur
+
      */
     private function getDateRange($period, $startDate = null, $endDate = null)
     {
         $now = Carbon::now();
         
-        // Özel tarih aralığı seçildiyse ve tarihler belirtildiyse onları kullan
+   
         if ($period === 'custom' && $startDate && $endDate) {
             return [
                 'start' => Carbon::parse($startDate)->startOfDay(),
@@ -425,7 +423,7 @@ class ReportController extends Controller
     }
     
     /**
-     * Önceki dönem tarih aralığını hesaplar
+
      */
     private function getPreviousPeriodRange($period, $currentRange = null)
     {
@@ -436,10 +434,10 @@ class ReportController extends Controller
         $currentStart = Carbon::parse($currentRange['start']);
         $currentEnd = Carbon::parse($currentRange['end']);
         
-        // Mevcut dönemin uzunluğunu hesapla
+
         $diff = $currentStart->diffInDays($currentEnd) + 1;
         
-        // Önceki dönem = mevcut dönemden önceki aynı uzunluktaki zaman dilimi
+    
         return [
             'start' => $currentStart->copy()->subDays($diff),
             'end' => $currentEnd->copy()->subDays($diff)

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class FavoriteController extends Controller
 {
     /**
-     * Kullanıcının favorilerini listeler
+
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -19,7 +19,7 @@ class FavoriteController extends Controller
     {
         $user = Auth::user();
         
-        // Kullanıcının favori turlarını tur ilişkisiyle birlikte getir
+
         $favorites = $user->favoriteTours()
             ->with(['category'])
             ->get();
@@ -31,7 +31,7 @@ class FavoriteController extends Controller
     }
 
     /**
-     * Tur favori durumunu kontrol eder
+
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -57,7 +57,7 @@ class FavoriteController extends Controller
     }
 
     /**
-     * Favori durumunu değiştirir (ekler/çıkarır)
+
      *
      * @param int $tourId
      * @return \Illuminate\Http\JsonResponse
@@ -67,7 +67,7 @@ class FavoriteController extends Controller
         try {
             $user = Auth::user();
             
-            // Tur ID'sini kontrol et
+ 
             $tour = Tour::find($tourId);
             if (!$tour) {
                 return response()->json([
@@ -76,7 +76,7 @@ class FavoriteController extends Controller
                 ], 404);
             }
             
-            // Eğer zaten favorilerde varsa kaldır, yoksa ekle
+
             $existingFavorite = $user->favorites()->where('tour_id', $tourId)->first();
             
             if ($existingFavorite) {
@@ -113,7 +113,7 @@ class FavoriteController extends Controller
     }
     
     /**
-     * Favoriyi kaldırır
+
      *
      * @param int $tourId
      * @return \Illuminate\Http\JsonResponse
