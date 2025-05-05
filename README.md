@@ -2,7 +2,7 @@
 
 ## Proje Hakkında
 
-Bu proje, tur rezervasyonu ve yönetimi için geliştirilmiş kapsamlı bir web uygulamasıdır. Kullanıcılar sisteme kayıt olabilir, turları inceleyebilir, rezervasyon yapabilir ve değerlendirme yazabilirler. Ayrıca admin paneli ile turlar, rezervasyonlar ve kullanıcılar yönetilebilir. Sadece online ödeme ile alakalı Stripe veya PayTR tarzı bir entegrasyon henüz yapılmadı yapılmama sebebi projenin örnek proje olması amaçlandı. Şimdilik iletişim sayfamızla alakalı backend kodu yazılmadı!
+Bu proje, tur rezervasyonu ve yönetimi için geliştirilmiş kapsamlı bir web uygulamasıdır. Kullanıcılar sisteme kayıt olabilir, turları inceleyebilir, rezervasyon yapabilir ve değerlendirme yazabilirler. Ayrıca admin paneli ile turlar, rezervasyonlar ve kullanıcılar yönetilebilir. Sadece online ödeme ile alakalı Stripe veya PayTR tarzı bir entegrasyon henüz yapılmadı yapılmama sebebi projenin örnek proje olması amaçlandı. (Fakat Entegrasyonu yapılacak.) Şimdilik iletişim sayfamızla alakalı backend kodu yazılmadı!
 
 ## Kullanılan Teknolojiler
 
