@@ -56,7 +56,7 @@ class User extends Authenticatable
     {
         parent::__construct($attributes);
         
-        // Varsayılan olarak user (id=1) rolünü ata
+     
         $this->attributes['role_id'] = 1;
     }
 
@@ -84,7 +84,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Kullanıcının tur ID'sine göre favori durumunu kontrol et
+
      * @param int $tourId
      * @return bool
      */

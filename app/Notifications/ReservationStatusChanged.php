@@ -17,7 +17,7 @@ class ReservationStatusChanged extends Notification implements ShouldQueue
     protected $message;
 
     /**
-     * Create a new notification instance.
+
      *
      * @param Reservation $reservation
      * @param string $action
@@ -32,7 +32,7 @@ class ReservationStatusChanged extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the notification's delivery channels.
+
      *
      * @param  mixed  $notifiable
      * @return array
@@ -43,7 +43,7 @@ class ReservationStatusChanged extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the mail representation of the notification.
+
      *
      * @param  mixed  $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
@@ -66,7 +66,7 @@ class ReservationStatusChanged extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the array representation of the notification.
+
      *
      * @param  mixed  $notifiable
      * @return array

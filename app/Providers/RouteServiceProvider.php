@@ -10,9 +10,7 @@ use Illuminate\Http\Request;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    /**
-     * Configure the rate limiters for the application.
-     */
+
     protected function configureRateLimiting(): void
     {
         RateLimiter::for('api', function (Request $request) {
@@ -20,9 +18,7 @@ class RouteServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Define your routes model binding, pattern filters, etc.
-     */
+
     public function boot(): void
     {
         $this->routes(function () {
