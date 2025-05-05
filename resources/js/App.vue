@@ -1,4 +1,4 @@
-<template> //test
+<template>
   <div id="app" class="overflow-x-hidden min-h-screen bg-white dark:bg-gray-900">
     <!-- Admin sayfalarında ana layout'u gösterme -->
     <template v-if="isAdminRoute">
