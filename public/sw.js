@@ -12,7 +12,7 @@ const STATIC_ASSETS = [
   '/images/tours/goreme.jpg'
 ];
 
-// Service Worker yüklendiğinde önbelleğe alma
+
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -24,7 +24,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// Eski önbellekleri temizleme
+
 self.addEventListener('activate', event => {
   const currentCaches = [CACHE_NAME];
   event.waitUntil(
@@ -38,17 +38,17 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Cache First, Network Fallback stratejisi
+
 self.addEventListener('fetch', event => {
-  // Sadece GET isteklerini önbelleğe alalım
+ 
   if (event.request.method !== 'GET') return;
   
-  // API isteklerini önbelleğe almayalım
+  
   if (event.request.url.includes('/api/')) {
     return;
   }
   
-  // Resim ve statik varlıklar için önbellek stratejisi
+  
   if (
     event.request.url.match(/\.(jpeg|jpg|png|gif|svg|ico)$/) ||
     event.request.url.match(/\.(css|js)$/)
@@ -57,11 +57,11 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Diğer tüm istekler için network first stratejisi
+  
   event.respondWith(networkFirst(event.request));
 });
 
-// Cache First stratejisi
+
 async function cacheFirst(request) {
   const cachedResponse = await caches.match(request);
   if (cachedResponse) {
@@ -76,12 +76,12 @@ async function cacheFirst(request) {
     return networkResponse;
   } catch (error) {
     console.error('Fetch hatası:', error);
-    // Herhangi bir fallback içerik dönebilirsiniz
+   
     return new Response('Offline', { status: 408, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 
-// Network First stratejisi
+
 async function networkFirst(request) {
   try {
     const networkResponse = await fetch(request);
